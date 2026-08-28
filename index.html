@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S.I.I.F — Sistema de Investigação e Inteligência Folclórica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-dark:#050505;
+    --panel:#121212;
+    --blood-red:#8a0303;
+    --blood-red-bright:#d40000;
+    --blood-red-dark:#4a0101;
+    --folder-color:#d0b484; 
+    --folder-color-2:#c4a47c; 
+    --folder-ink:#171310;
+    --text-muted:#8a8a8a;
+    --amber:#d9a441;
+    --caution-yellow:#f2c200;
+    --pen-blue:#00008b;
+  }
+  *{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:'Courier Prime','Courier New',Courier,monospace;
+    background-color:var(--bg-dark);
+    color:#ddd;
+    overflow-x:hidden;
+    position:relative;
+    background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.75) 2px,rgba(0,0,0,.75) 4px);
+  }
+  
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:500;mix-blend-mode:overlay;opacity:.35;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:501;
+    background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.75) 100%);
+  }
+
+  ::selection{background:var(--blood-red-bright);color:#fff;}
+
+  .tape-band{
+    width:100%;overflow:hidden;height:26px;
+    background:repeating-linear-gradient(135deg,var(--caution-yellow) 0 26px,#0a0a0a 26px 52px);
+    box-shadow:0 0 12px rgba(0,0,0,.6) inset;position:relative;z-index:2;
+  }
+  .tape-band span{
+    display:inline-block;white-space:nowrap;color:#0a0a0a;font-weight:bold;letter-spacing:6px;
+    font-size:.75em;line-height:26px;padding-left:100%;
+    animation:tape-scroll 45s linear infinite; 
+    text-shadow:0 1px 0 rgba(255,255,255,.15);
+  }
+  @keyframes tape-scroll{ from{transform:translateX(0);} to{transform:translateX(-100%);} }
+
+  #boot-screen{
+    position:fixed;inset:0;background:#000;color:var(--amber);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:999;text-align:center;padding:20px;
+    background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.85) 2px,rgba(0,0,0,.85) 4px);
+  }
+  #boot-screen h1{
+    font-family:'Special Elite',monospace;font-size:2.4em;letter-spacing:8px;margin-bottom:10px;color:#fff;
+    animation:glitch-flicker 3.6s infinite; text-shadow:2px 0 var(--blood-red-bright),-2px 0 #1fa2c9;
+  }
+  @keyframes glitch-flicker{
+    0%,89%,100%{opacity:1;text-shadow:2px 0 var(--blood-red-bright),-2px 0 #1fa2c9;transform:translate(0,0);}
+    90%{opacity:.6;text-shadow:-3px 0 var(--blood-red-bright),3px 0 #1fa2c9;transform:translate(-2px,1px);}
+    91%{opacity:1;transform:translate(2px,-1px);}
+    92%{opacity:.4;transform:translate(0,0);}
+    93%{opacity:1;}
+  }
+  #boot-screen p{color:var(--amber);font-size:.95em;max-width:600px;line-height:1.6;font-family:'Special Elite',monospace;}
+  
+  /* Botão oculto por padrão */
+  #boot-screen .blink{
+    display:none; margin-top:40px;font-size:1.2em;border:2px solid var(--amber);
+    padding:18px 40px;cursor:pointer;letter-spacing:2px;
+    animation:blink 1.4s infinite;transition:.2s;font-family:'Special Elite',monospace;
+  }
+  #boot-screen .blink:hover{background:var(--amber);color:#000;box-shadow:0 0 24px rgba(217,164,65,.7);}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+  
+  #boot-log{margin-top:25px;font-size:.78em;color:#4a7a3f;text-align:left;max-width:600px;min-height:90px;}
+  #boot-log div{animation:type-in .25s steps(1) both;}
+  @keyframes type-in{from{opacity:0;transform:translateX(-6px);}to{opacity:1;transform:translateX(0);}}
+
+  header{
+    background-color:#0d0d0d;color:var(--blood-red-bright);
+    padding:22px 20px 18px;text-align:center;
+    text-transform:uppercase;letter-spacing:3px;
+    box-shadow:0 4px 18px rgba(138,3,3,.35);
+    font-family:'Special Elite',monospace;
+    font-size: 1.7em; 
+    position:relative;z-index:2;
+    animation:crt-flicker 6s infinite;
+  }
+  @keyframes crt-flicker{ 0%,96%,100%{filter:brightness(1);} 97%{filter:brightness(1.15);} 98%{filter:brightness(.85);} }
+  header .sub{display:block;font-size:.45em;color:var(--text-muted);letter-spacing:4px;margin-top:10px;}
+  header .clock{display:block;font-size:.35em;color:#4a7a3f;letter-spacing:1px;margin-top:6px;font-family:'Courier Prime',monospace;}
+
+  .container{max-width:1400px;margin:0 auto;padding:26px;position:relative;z-index:1;}
+
+  .blood-bg{
+    position:absolute;pointer-events:none;z-index:0;
+    mix-blend-mode:multiply;opacity:0.45;filter:blur(1px);
+  }
+  .blood-1{width:250px;height:250px;top:50px;right:-40px;background:radial-gradient(circle at 40% 40%,var(--blood-red) 0%,var(--blood-red-dark) 40%,transparent 70%);border-radius:45% 55% 40% 60%;}
+  .blood-2{width:300px;height:300px;bottom:10%;left:-80px;background:radial-gradient(circle at 60% 50%,var(--blood-red) 0%,transparent 60%);border-radius:50% 60% 40% 50%;}
+
+  #main-menu p.intro{color:#7fbf6a;font-size:.95em;margin-bottom:4px;font-family:'Courier Prime',monospace;}
+  #main-menu p.intro::after{content:"▮";animation:blink 1s steps(2) infinite;margin-left:4px;}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 35px;}
+  .filter-btn{
+    background:#111;color:#bbb;border:1px solid #333;padding:10px 16px;
+    font-family:inherit;font-size:.85em;cursor:pointer;text-transform:uppercase;letter-spacing:1px;
+    transition:.18s ease;
+  }
+  .filter-btn:hover{border-color:#555;color:#fff;background:#1a1a1a;}
+  .filter-btn.active{background:#222;color:var(--amber);border-color:var(--amber);box-shadow:0 0 10px rgba(217,164,65,.3);}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:35px 25px;position:relative;z-index:2;}
+  
+  .case-card{
+    background-color:var(--folder-color);
+    color:var(--folder-ink);
+    border:1px solid #a68a5c;
+    border-radius:2px 8px 2px 2px;
+    padding:22px; cursor:pointer; position:relative;
+    box-shadow:inset 0 0 20px rgba(0,0,0,0.2), 4px 6px 15px rgba(0,0,0,0.7);
+    margin-top:15px; 
+    transition:transform .2s ease, box-shadow .2s ease, filter .2s ease;
+    opacity:0;transform:translateY(18px);
+    animation:card-in .5s ease forwards;
+  }
+  @keyframes card-in{to{opacity:1;transform:translateY(0);}}
+  
+  .case-card::before {
+    content: ""; position: absolute;
+    top: -15px; left: 0;
+    width: 45%; height: 15px;
+    background-color: var(--folder-color-2);
+    border: 1px solid #a68a5c; border-bottom: none;
+    border-radius: 4px 12px 0 0;
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.1);
+  }
+  
+  .case-card::after {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.02) 0 1px, transparent 1px 3px);
+    border-radius: 2px 8px 2px 2px;
+  }
+
+  .case-card:hover{
+    transform:translateY(-5px) rotate(-1deg);
+    box-shadow:inset 0 0 20px rgba(0,0,0,0.15), 8px 12px 25px rgba(0,0,0,0.8);
+    filter: brightness(1.05);
+  }
+
+  .case-id{color:#443b2a;font-size:.75em;margin-bottom:8px;font-weight:bold;letter-spacing:1px;}
+  .case-title{
+    font-size:1.35em;font-weight:bold;color:#0d0b08;margin-bottom:12px;
+    font-family:'Special Elite',monospace;letter-spacing:.5px;
+    border-bottom:2px solid rgba(0,0,0,0.2); padding-bottom:6px;
+  }
+  .case-region{font-size:.8em;color:#332c1e;margin-bottom:4px;font-weight:bold;text-transform:uppercase;}
+  .case-threat{font-size:.85em;color:#4a412f; margin-bottom: 12px;}
+  
+  .threat-tag{
+    display:inline-block; font-size:.7em; font-weight:bold; letter-spacing:1px; 
+    padding:4px 10px; border-radius:2px; text-transform:uppercase;
+    font-family:'Special Elite',monospace; transform:rotate(-3deg);
+    border: 2px solid; background:transparent; mix-blend-mode:multiply; opacity:0.85;
+  }
+  .threat-vermelha{color:var(--blood-red-bright); border-color:var(--blood-red-bright);}
+  .threat-laranja{color:#b35900; border-color:#b35900;}
+  .threat-amarela{color:#997300; border-color:#997300;}
+  .threat-azul{color:#234b6e; border-color:#234b6e;}
+
+  .card-blood {
+    position:absolute; bottom: -5px; right: 10px; width: 40px; height: 40px;
+    background: radial-gradient(circle, var(--blood-red) 0%, transparent 60%);
+    opacity: 0.6; mix-blend-mode: multiply; border-radius: 50%; pointer-events:none;
+  }
+
+  #case-file{display:none;animation:fade-slide .4s ease both; z-index: 5;}
+  @keyframes fade-slide{from{opacity:0;transform:translateX(24px);}to{opacity:1;transform:translateX(0);}}
+  .toolbar{display:flex;justify-content:space-between;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+  .btn{background-color:#1c1c1c;color:#fff;border:1px solid #444;padding:14px 26px;cursor:pointer;font-family:inherit;font-size:1em;text-transform:uppercase;letter-spacing:1px;transition:.18s;}
+  .btn:hover{border-color:var(--blood-red-bright);box-shadow:0 0 14px rgba(212,0,0,.35);}
+  
+  .dossier-wrapper{
+    background-color:#dcccae;
+    background-image: radial-gradient(ellipse 260px 180px at 92% 8%,rgba(120,90,40,.18),transparent 70%), repeating-linear-gradient(90deg,rgba(0,0,0,.015) 0 1px,transparent 1px 3px);
+    color:var(--folder-ink);
+    padding:32px;border-radius:2px;
+    box-shadow:inset 0 0 70px rgba(0,0,0,.4),0 14px 40px rgba(0,0,0,.6);
+    position:relative; clip-path:polygon(0% 0.6%,3% 0%,97% 0.3%,100% 1%,100% 99%,96% 100%,2% 99.5%,0% 99%);
+  }
+  
+  .stain{position:absolute;pointer-events:none;z-index:1;}
+  .coffee-ring{width:140px;height:140px;top:-20px;right:-20px;border:5px solid rgba(101,67,33,0.4);border-radius:50%;box-shadow:inset 0 0 10px rgba(101,67,33,0.2),0 0 10px rgba(101,67,33,0.2);opacity:0.8;mix-blend-mode:multiply;filter:blur(0.5px);}
+  .ink-smudge{width:180px;height:110px;bottom:20px;left:-30px;background:radial-gradient(ellipse at 40% 40%,rgba(30,30,30,0.4) 0%,transparent 60%);border-radius:40% 60% 50% 50%;opacity:0.6;mix-blend-mode:multiply;filter:blur(2px);}
+  .blood-drop {width:35px;height:35px;top:40%;left:50%;background:radial-gradient(circle, var(--blood-red) 10%, transparent 70%);opacity:0.85;mix-blend-mode:multiply;}
+
+  .detetive-note{font-family:'Caveat',cursive;color:var(--pen-blue);font-size:1.6em;position:absolute;z-index:10;opacity:0.85;transform:rotate(-4deg);text-shadow:0 0 1px rgba(0,0,139,0.2);max-width:200px;line-height:1.1;}
+
+  h2.dossier-title{font-family:'Special Elite',monospace;font-size:1.9em;margin:0 0 4px;text-transform:uppercase;border-bottom:3px solid var(--folder-ink);padding-bottom:10px;letter-spacing:1px;}
+  .dossier-meta{display:flex;flex-wrap:wrap;gap:18px;font-size:.9em;margin:10px 0 8px;color:#3a3226;align-items:center;}
+  .classification-badge{display:inline-block;font-family:'Special Elite',monospace;font-size:.78em;font-weight:bold;letter-spacing:2px;padding:4px 12px;border:2px solid var(--blood-red);color:var(--blood-red);transform:rotate(-2deg);}
+  .case-number{font-size:.82em;color:#5a4f3c;margin-bottom:18px;letter-spacing:.5px;}
+
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;border-bottom:2px solid #6b5d47;padding-bottom:12px;margin-bottom:20px;}
+  .tab-btn{background:#c4b190;color:#171310;border:1px solid #7a6a4f;padding:11px 18px;cursor:pointer;font-weight:bold;font-size:1em;font-family:inherit;transition:.18s;}
+  .tab-btn:hover{background:#b7a17a;}
+  .tab-btn.active{background:var(--blood-red);color:#fff;border-color:var(--blood-red-bright);box-shadow:0 0 12px rgba(138,3,3,.5);}
+
+  .tab-body{display:flex;gap:30px;flex-wrap:wrap;position:relative;}
+  .tab-body.fading{animation:tab-fade .3s ease;}
+  @keyframes tab-fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  
+  .evidence-board{flex:1;min-width:260px;display:flex;flex-direction:column;align-items:center;max-width:400px;position:relative;}
+  .photo-frame{background:#eee;padding:10px 10px 38px 10px;box-shadow:2px 6px 16px rgba(0,0,0,.5);transform:rotate(-1.2deg);width:100%;position:relative;transition:transform .3s ease;}
+  .photo-frame::before{content:"";position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8080,var(--blood-red-bright) 55%,#5c0000 100%);box-shadow:0 3px 5px rgba(0,0,0,.6);z-index:3;}
+  .photo-frame::after{content:"";position:absolute;top:-10px;right:14px;width:56px;height:22px;background:repeating-linear-gradient(45deg,var(--caution-yellow) 0 6px,#171310 6px 12px);opacity:.85;transform:rotate(8deg);box-shadow:0 2px 4px rgba(0,0,0,.4);}
+  .photo-placeholder{width:100%;aspect-ratio:4/3;background:#2a2a2a repeating-linear-gradient(45deg,#2a2a2a,#2a2a2a 10px,#1e1e1e 10px,#1e1e1e 20px);background-size:cover;background-position:center;border:1px solid #111;filter:grayscale(.15) contrast(1.05);}
+  .photo-caption{position:absolute;bottom:9px;left:14px;font-weight:bold;font-size:.82em;}
+  .evidence-upload-zone{border:2px dashed var(--amber);background:rgba(217,164,65,.06);padding:24px;text-align:center;margin-bottom:20px;}
+  .upload-btn{display:inline-block;background:var(--blood-red);color:#fff;border:1px solid var(--blood-red-bright);padding:12px 22px;font-weight:bold;font-family:inherit;cursor:pointer;letter-spacing:.5px;transition:.18s;}
+  .upload-btn:hover{background:var(--blood-red-bright);box-shadow:0 0 12px rgba(212,0,0,.5);}
+  .upload-hint{color:var(--text-muted);font-size:.85em;margin:12px 0 0;}
+  .evidence-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:22px 18px;}
+  .evidence-item{position:relative;background:#eee;padding:8px 8px 26px 8px;box-shadow:2px 6px 14px rgba(0,0,0,.5);transform:rotate(-1deg);}
+  .evidence-item:nth-child(even){transform:rotate(1.2deg);}
+  .evidence-item img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;filter:grayscale(.1) contrast(1.03);}
+  .evidence-date{position:absolute;bottom:6px;left:10px;color:#171310;font-size:.72em;font-weight:bold;}
+  .evidence-remove{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;background:var(--blood-red);color:#fff;border:1px solid var(--blood-red-bright);cursor:pointer;font-weight:bold;line-height:22px;padding:0;z-index:2;font-family:inherit;}
+  .evidence-remove:hover{background:var(--blood-red-bright);}
+  .evidence-empty{color:var(--text-muted);font-style:italic;grid-column:1/-1;text-align:center;padding:20px;}
+  .token-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;font-size:.85em;color:var(--text-muted);}
+  .token-btn{background:transparent;color:var(--amber);border:1px solid var(--amber);padding:6px 14px;font-weight:bold;font-family:inherit;cursor:pointer;font-size:.9em;transition:.18s;}
+  .token-btn:hover{background:var(--amber);color:#171310;}
+  .upload-status{color:var(--amber);font-size:.85em;margin:10px 0 0;min-height:1.2em;}
+  
+  .stamp{margin-top:18px;border:4px double var(--blood-red);color:var(--blood-red);font-weight:bold;padding:6px 14px;font-size:1.15em;transform:rotate(-9deg);opacity:.88;font-family:'Special Elite',monospace;letter-spacing:2px;}
+
+  .text-content{flex:2;min-width:280px; position:relative;}
+  .section-label{font-weight:bold;text-decoration:underline;margin-top:18px;display:block;font-size:1em;font-family:'Special Elite',monospace;text-transform:uppercase;color:#241d14;}
+  p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px;}
+
+  .redacted {background-color:#1a1a1a;color:#1a1a1a;padding:0 6px;border-radius:2px;cursor:help;transition:0.3s;}
+  .redacted:hover {background-color:transparent;color:var(--blood-red);border:1px dashed var(--blood-red);}
+
+  .audio-player {background:#111;border:2px solid #333;padding:12px 18px;margin:15px 0;display:flex;align-items:center;gap:15px;color:#7fbf6a;box-shadow:inset 0 0 15px rgba(0,0,0,0.9);}
+  .audio-play {font-size:1.8em;cursor:pointer;color:var(--blood-red-bright);transition:0.2s;line-height:1;}
+  .audio-play:hover {text-shadow:0 0 12px var(--blood-red-bright);transform:scale(1.1);}
+  .audio-wave {flex:1;height:24px;background:repeating-linear-gradient(90deg,#7fbf6a 0,#7fbf6a 3px,transparent 3px,transparent 6px);opacity:0.7;}
+  
+  footer.foot{text-align:center;color:#555;font-size:.75em;padding:22px;letter-spacing:1px;position:relative;z-index:1;}
+</style>
+</head>
+<body>
+
+<div id="boot-screen">
+  <h1>S.I.I.F</h1>
+  <p>SISTEMA DE INVESTIGAÇÃO E INTELIGÊNCIA FOLCLÓRICA<br>ACESSO RESTRITO — NÍVEL 4</p>
+  <div id="boot-log"></div>
+  <div class="blink" id="access-btn" onclick="startSystem()">[ TOQUE PARA ACESSAR OS ARQUIVOS ]</div>
+</div>
+
+<header>
+  Departamento de Investigações Populares
+  <span class="sub">Divisão de Ocorrências Paranormais &amp; Culturais</span>
+  <span class="clock" id="live-clock"></span>
+</header>
+<div class="tape-band"><span>⚠ CENA DE INVESTIGAÇÃO — NÃO ULTRAPASSE ⚠ ACESSO RESTRITO — NÍVEL 4 ⚠ CENA DE INVESTIGAÇÃO — NÃO ULTRAPASSE ⚠ ACESSO RESTRITO — NÍVEL 4 ⚠&nbsp;</span></div>
+
+<div class="blood-bg blood-1"></div>
+<div class="blood-bg blood-2"></div>
+
+<div class="container" id="main-menu" style="display:none;">
+  <p class="intro">&gt; BANCO DE DADOS CARREGADO. 27 ARQUIVOS DISPONÍVEIS.</p>
+  <p style="color:#999;">Selecione uma região ou um arquivo físico para expandir o dossiê completo:</p>
+  <div class="filters" id="region-filters"></div>
+  <div class="grid" id="cases-grid"></div>
+</div>
+
+<div class="container" id="case-file">
+  <div class="toolbar">
+    <button class="btn" onclick="closeCase()">&laquo; DEVOLVER ARQUIVO À ESTANTE</button>
+  </div>
+  <div class="dossier-wrapper">
+    <div class="stain coffee-ring"></div>
+    <div class="stain ink-smudge"></div>
+    <div class="stain blood-drop"></div>
+    <h2 class="dossier-title" id="display-name">Carregando...</h2>
+    <div class="case-number" id="display-casenumber"></div>
+    <div class="dossier-meta">
+      <span><b>Região:</b> <span id="display-region"></span></span>
+      <span><b>Ameaça:</b> <span id="display-threat"></span></span>
+      <span class="classification-badge" id="display-classbadge">RESTRITO</span>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" id="btn-entidade" onclick="changeTab('entidade')">1. O Suspeito</button>
+      <button class="tab-btn" id="btn-testemunha" onclick="changeTab('testemunha')">2. A Testemunha</button>
+      <button class="tab-btn" id="btn-desaparecido" onclick="changeTab('desaparecido')">3. A Vítima/B.O.</button>
+      <button class="tab-btn" id="btn-evidencias" onclick="changeTab('evidencias')">4. Evidências da Turma</button>
+    </div>
+    <div class="tab-body" id="tab-body">
+      <div id="dynamic-note"></div>
+      <div class="evidence-board">
+        <div class="photo-frame">
+          <div class="photo-placeholder" id="display-photo"></div>
+          <div class="photo-caption" id="display-caption">Evidência</div>
+        </div>
+        <div class="stamp" id="display-stamp">TOP SECRET</div>
+      </div>
+      <div class="text-content" id="display-text-blocks"></div>
+      <div class="text-content" id="evidence-upload-section" style="display:none;">
+        <div class="evidence-upload-zone">
+          <div class="token-row">
+            <span id="token-status">🔒 Token não configurado</span>
+            <button class="token-btn" onclick="configurarToken()">Configurar Token</button>
+          </div>
+          <label class="upload-btn" for="evidencia-input">📎 ANEXAR FOTO DO TRABALHO</label>
+          <input type="file" id="evidencia-input" accept="image/*" multiple style="display:none" onchange="handleEvidenciaUpload(event)">
+          <p class="upload-hint">Envie fotos do cartaz, maquete, desenho ou apresentação da turma sobre esta lenda. As fotos vão direto para o GitHub e ficam visíveis para qualquer pessoa que abrir o site, em qualquer aparelho.</p>
+          <p class="upload-status" id="upload-status"></p>
+        </div>
+        <div class="evidence-gallery" id="evidence-gallery"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tape-band"><span>⚠ S.I.I.F — DIVISÃO DE OCORRÊNCIAS PARANORMAIS E CULTURAIS ⚠ ARQUIVO CONFIDENCIAL ⚠ S.I.I.F — DIVISÃO DE OCORRÊNCIAS PARANORMAIS E CULTURAIS ⚠ ARQUIVO CONFIDENCIAL ⚠&nbsp;</span></div>
+<footer class="foot">S.I.I.F — Projeto Escolar de Folclore Brasileiro &middot; Uso Educacional</footer>
+
+<script>
+const folcloreDB = [
+{id:"001", nome:"Matinta Pereira", regiao:"Norte", ameaca:"Extorsão Sobrenatural / Pânico", nota_detetive:"Ligar p/ delegacia, preciso dos B.O.s de 98!", abas:{entidade:{foto:"img/matinta_entidade.jpg", legenda:"Retrato Falado", blocos:[{label:"Modus Operandi", texto:"Assobios ensurdecedores durante a madrugada. A recusa de oferendas resulta em <span class='redacted'>alucinações severas</span>."}]}, testemunha:{foto:"img/matinta_testemunha.jpg", legenda:"Depoimento", audio:true, duracao:"02:14", blocos:[{label:"Transcrição", texto:"\"O assobio não parava. Só quando deixei fumo na janela o silêncio voltou.\""}]}, desaparecido:{foto:"img/matinta_bo.jpg", legenda:"B.O. 001-A", blocos:[{label:"Ocorrência", texto:"Dezenas de queixas de perturbação noturna e invasão."}]}}},
+{id:"002", nome:"Mãe do Ouro", regiao:"Sudeste", ameaca:"Fenômeno Aéreo / Combustão", abas:{entidade:{foto:"img/maeouro_entidade.jpg", legenda:"Radar Aéreo", blocos:[{label:"Modus Operandi", texto:"Esfera incandescente não identificada que patrulha jazidas minerais. <span class='redacted'>Carboniza maquinário invasor.</span>"}]}, testemunha:{foto:"img/maeouro_testemunha.jpg", legenda:"Garimpeiro", audio:false, blocos:[{label:"Depoimento", texto:"\"Uma bola de fogo desceu do céu e derreteu a escavadeira em segundos.\""}]}, desaparecido:{foto:"img/maeouro_bo.jpg", legenda:"Laudo Pericial", blocos:[{label:"Ocorrência", texto:"Equipamentos de mineração ilegal encontrados fundidos à rocha."}]}}},
+{id:"003", nome:"Mapinguari", regiao:"Norte", ameaca:"Letal / Predatória Extrema", nota_detetive:"Fóssil de preguiça gigante? O cheiro não bate.", abas:{entidade:{foto:"img/mapinguari_entidade.jpg", legenda:"Molde de Pegada", blocos:[{label:"Modus Operandi", texto:"Força descomunal, carapaça imune a disparos e emissão de odor incapacitante."}]}, testemunha:{foto:"img/mapinguari_testemunha.jpg", legenda:"Caçador Ilegal", audio:false, blocos:[{label:"Transcrição", texto:"\"Tinha três metros e um olho só. O cheiro era de carne podre com enxofre.\""}]}, desaparecido:{foto:"img/mapinguari_bo.jpg", legenda:"Cena do Crime", blocos:[{label:"Ocorrência", texto:"Acampamento de garimpeiros completamente destruído. Corpos não localizados."}]}}},
+{id:"004", nome:"Anhangá", regiao:"Nacional", ameaca:"Espectral / Defesa Ambiental", abas:{entidade:{foto:"img/anhanga_entidade.jpg", legenda:"Câmera de Trilha", blocos:[{label:"Modus Operandi", texto:"Entidade transmórfica (geralmente um cervo branco com olhos de fogo) que <span class='redacted'>induz caçadores ao suicídio ou fogo cruzado</span>."}]}, testemunha:{foto:"img/anhanga_testemunha.jpg", legenda:"Fita 12", audio:true, duracao:"01:45", blocos:[{label:"Gravação", texto:"(Sons de tiros confusos seguidos de gritos de 'Ele está no cervo!')"}]}, desaparecido:{foto:"img/anhanga_bo.jpg", legenda:"Registro Policial", blocos:[{label:"Ocorrência", texto:"Dois caçadores encontrados mortos pelos próprios rifles."}]}}},
+{id:"005", nome:"Quibungo", regiao:"Nordeste", ameaca:"Predatória / Sequestro de Menores", abas:{entidade:{foto:"img/quibungo_entidade.jpg", legenda:"Esboço Policial", blocos:[{label:"Modus Operandi", texto:"Criatura antropomórfica que espreita crianças desgarradas. Possui uma fissura dorsal usada para absorção das vítimas."}]}, testemunha:{foto:"img/quibungo_testemunha.jpg", legenda:"Mãe da vítima", audio:true, duracao:"04:10", blocos:[{label:"Depoimento", texto:"\"O bicho abriu as costas e engoliu meu filho inteiro. Não sobrou nem o chinelo.\""}]}, desaparecido:{foto:"img/quibungo_bo.jpg", legenda:"Arquivo Morto", blocos:[{label:"Ocorrência", texto:"Pico de desaparecimentos infantis em áreas periféricas rurais."}]}}},
+{id:"006", nome:"Tereza Bicuda", regiao:"Centro-Oeste", ameaca:"Espectral / Vampirismo", nota_detetive:"Exumação do corpo solicitada. Aguardando juiz.", abas:{entidade:{foto:"img/tereza_entidade.jpg", legenda:"Túmulo Violado", blocos:[{label:"Modus Operandi", texto:"Cadáver animado que persegue viajantes noturnos. Relatos de <span class='redacted'>drenagem de sangue e mutilação labial</span>."}]}, testemunha:{foto:"img/tereza_testemunha.jpg", legenda:"Viajante", audio:false, blocos:[{label:"Transcrição", texto:"\"Ela corria ao lado do meu cavalo, rindo. Os dentes eram pontudos, sujos de terra.\""}]}, desaparecido:{foto:"img/tereza_bo.jpg", legenda:"Laudo Necropsial", blocos:[{label:"Ocorrência", texto:"Gado e cavalos encontrados mortos por exsanguinação."}]}}},
+{id:"007", nome:"Cuca", regiao:"Nacional", ameaca:"Sequestro / Contaminação Biológica", abas:{entidade:{foto:"img/cuca_entidade.jpg", legenda:"Material Apreendido", blocos:[{label:"Modus Operandi", texto:"Invasão domiciliar focada em infantes. Uso de toxinas não catalogadas para indução de letargia profunda."}]}, testemunha:{foto:"img/cuca_testemunha.jpg", legenda:"Pai da vítima", audio:false, blocos:[{label:"Depoimento", texto:"\"A porta estava trancada por dentro. Tinha um pó verde no berço vazio.\""}]}, desaparecido:{foto:"img/cuca_bo.jpg", legenda:"Dossiê 1912", blocos:[{label:"Ocorrência", texto:"Série de abduções não solucionadas associadas a cânticos noturnos."}]}}},
+{id:"008", nome:"Lobisomem", regiao:"Nacional", ameaca:"Letal / Ataque Físico Extremo", abas:{entidade:{foto:"img/lobisomem_entidade.jpg", legenda:"Carcaça Animal", blocos:[{label:"Modus Operandi", texto:"Mutação biológica induzida por ciclo lunar. Mutilação severa de rebanhos e humanos isolados."}]}, testemunha:{foto:"img/lobisomem_testemunha.jpg", legenda:"Depoimento Policial", audio:true, duracao:"07:44", blocos:[{label:"Depoimento", texto:"\"Esvaziei o tambor do 38 naquilo e ele nem se mexeu. Não era um cachorro grande, chefe.\""}]}, desaparecido:{foto:"img/lobisomem_bo.jpg", legenda:"Laudo IML", blocos:[{label:"Ocorrência", texto:"Vítima apresenta marcas de garras incompatíveis com a fauna local."}]}}},
+{id:"009", nome:"Curupira", regiao:"Nacional", ameaca:"Desorientação / Fogo Cruzado", nota_detetive:"Investigar sabotagem nas bússolas dos peritos.", abas:{entidade:{foto:"img/curupira_entidade.jpg", legenda:"Pegadas Invertidas", blocos:[{label:"Modus Operandi", texto:"Rastro falso de pegadas que guia invasores florestais a armadilhas naturais e <span class='redacted'>demência temporária por looping espacial</span>."}]}, testemunha:{foto:"img/curupira_testemunha.jpg", legenda:"Rádio Comunicador", audio:true, duracao:"01:12", blocos:[{label:"Gravação", texto:"\"A gente andou reto por 6 horas e voltamos pro mesmo acampamento. O assobio tá mais perto.\""}]}, desaparecido:{foto:"img/curupira_bo.jpg", legenda:"B.O. Madeireira", blocos:[{label:"Ocorrência", texto:"Equipe de desmatamento desaparecida. Tratores encontrados intactos."}]}}},
+{id:"010", nome:"Capilobo", regiao:"Nordeste", ameaca:"Letal / Predatória", abas:{entidade:{foto:"img/capilobo_entidade.jpg", legenda:"Evidência Forense", blocos:[{label:"Modus Operandi", texto:"Híbrido de humano com tamanduá. Imobiliza as vítimas por esmagamento antes de <span class='redacted'>perfurar o crânio e sorver a massa encefálica</span>."}]}, testemunha:{foto:"img/capilobo_testemunha.jpg", legenda:"Sobrevivente", audio:false, blocos:[{label:"Transcrição", texto:"\"O bicho agarrou o Zé e não soltou mais. Tinha um focinho comprido de osso.\""}]}, desaparecido:{foto:"img/capilobo_bo.jpg", legenda:"Necropsia", blocos:[{label:"Ocorrência", texto:"Corpos encontrados com orifício cilíndrico na base do crânio."}]}}},
+{id:"011", nome:"Negrinho do Pastoreio", regiao:"Sul", ameaca:"Nenhuma / Fenômeno Espectral", abas:{entidade:{foto:"img/negrinho_entidade.jpg", legenda:"Velas Derretidas", blocos:[{label:"Modus Operandi", texto:"Aparição pacífica de um infante montado em cavalo baio. Devolve objetos perdidos mediante oferenda luminosa."}]}, testemunha:{foto:"img/negrinho_testemunha.jpg", legenda:"Fazendeiro", audio:false, blocos:[{label:"Depoimento", texto:"\"Perdi as chaves no pasto. Acendi a vela, e de manhã elas estavam na varanda.\""}]}, desaparecido:{foto:"img/negrinho_bo.jpg", legenda:"Registro Histórico", blocos:[{label:"Ocorrência", texto:"Mito associado aos maus-tratos de escravizados no século XIX."}]}}},
+{id:"012", nome:"Boto Cor-de-Rosa", regiao:"Norte", ameaca:"Hipnose / Abdução", abas:{entidade:{foto:"img/boto_entidade.jpg", legenda:"Chapéu Branco", blocos:[{label:"Modus Operandi", texto:"Infiltração em festividades ribeirinhas utilizando coerção hipnótica. <span class='redacted'>Induz amnésia e subsequente abandono de menores</span>."}]}, testemunha:{foto:"img/boto_testemunha.jpg", legenda:"Vítima", audio:true, duracao:"06:12", blocos:[{label:"Gravação", texto:"\"Ele nunca tirava o chapéu. Dançamos e de repente eu acordei na beira do rio, sozinha.\""}]}, desaparecido:{foto:"img/boto_bo.jpg", legenda:"Arquivo Civil", blocos:[{label:"Ocorrência", texto:"Centenas de registros de paternidade em branco na mesma comarca."}]}}},
+{id:"013", nome:"Corpo Seco", regiao:"Sudeste", ameaca:"Biológica / Contágio", nota_detetive:"Isolar o cemitério municipal imediatamente.", abas:{entidade:{foto:"img/corposeco_entidade.jpg", legenda:"Cova Rejeitada", blocos:[{label:"Modus Operandi", texto:"Cadáver ambulante rejeitado pelo solo. Emite esporos necróticos que ressecam a flora e <span class='redacted'>causam necrose cutânea em humanos</span>."}]}, testemunha:{foto:"img/corposeco_testemunha.jpg", legenda:"Coveiro", audio:false, blocos:[{label:"Transcrição", texto:"\"Enterrei ele na terça. Na quinta o corpo tava jogado pra fora, seco igual madeira.\""}]}, desaparecido:{foto:"img/corposeco_bo.jpg", legenda:"Laudo Médico", blocos:[{label:"Ocorrência", texto:"Infecção severa nos policiais que tentaram remover o cadáver."}]}}},
+{id:"014", nome:"Vitória Régia", regiao:"Norte", ameaca:"Afogamento Ilusório", abas:{entidade:{foto:"img/vitoriaregia_entidade.jpg", legenda:"Espécime Botânico", blocos:[{label:"Modus Operandi", texto:"Indução de miragens aquáticas (reflexos de corpos celestes) que compelem a vítima ao mergulho fatal. Metamorfose botânica pós-óbito."}]}, testemunha:{foto:"img/vitoriaregia_testemunha.jpg", legenda:"Indígena local", audio:false, blocos:[{label:"Depoimento", texto:"\"Ela achou que a lua tinha caído no rio. Pulou pra abraçar e não subiu mais.\""}]}, desaparecido:{foto:"img/vitoriaregia_bo.jpg", legenda:"B.O. Fluvial", blocos:[{label:"Ocorrência", texto:"Jovem desaparecida; florescimento incomum registrado na área da busca."}]}}},
+{id:"015", nome:"Boiúna", regiao:"Norte", ameaca:"Naufrágio / Destruição Colossal", abas:{entidade:{foto:"img/boiuna_entidade.jpg", legenda:"Sonar Fluvial", blocos:[{label:"Modus Operandi", texto:"Serpentiforme abissal com bioluminescência ocular. Simula embarcações iluminadas para atrair e afundar navios de carga."}]}, testemunha:{foto:"img/boiuna_testemunha.jpg", legenda:"Mestre do Barco", audio:true, duracao:"09:01", blocos:[{label:"Gravação", texto:"\"Pensei que era um navio vindo na contramão. Quando iluminamos, eram dois olhos gigantes submersos.\""}]}, desaparecido:{foto:"img/boiuna_bo.jpg", legenda:"Capitania dos Portos", blocos:[{label:"Ocorrência", texto:"Balsa de minério naufragada. Casco partido ao meio por força não mecânica."}]}}},
+{id:"016", nome:"Gaeté", regiao:"Nordeste", ameaca:"Ilusão / Emboscada na Mata", abas:{entidade:{foto:"img/gaete_entidade.jpg", legenda:"Foto Tremida", blocos:[{label:"Modus Operandi", texto:"Entidade camuflada na folhagem que simula vozes de parentes para desviar caçadores e <span class='redacted'>empurrá-los em desfiladeiros</span>."}]}, testemunha:{foto:"img/gaete_testemunha.jpg", legenda:"Mateiro", audio:false, blocos:[{label:"Transcrição", texto:"\"Ouvi meu irmão chamando meu nome no meio da selva. Meu irmão morreu há 10 anos.\""}]}, desaparecido:{foto:"img/gaete_bo.jpg", legenda:"Busca e Resgate", blocos:[{label:"Ocorrência", texto:"Equipe inteira perdida após seguir pedidos de socorro inexistentes."}]}}},
+{id:"017", nome:"Ipupiara", regiao:"Litoral", ameaca:"Letal / Afogamento Brutal", nota_detetive:"Fóssil em São Vicente de 1564. Checar arquivos da Marinha.", abas:{entidade:{foto:"img/ipupiara_entidade.jpg", legenda:"Ilustração de 1564", blocos:[{label:"Modus Operandi", texto:"Híbrido marinho que ataca em águas rasas. Sufoca a vítima em um abraço esmagador e devora globos oculares e extremidades."}]}, testemunha:{foto:"img/ipupiara_testemunha.jpg", legenda:"Pescador Caiçara", audio:false, blocos:[{label:"Depoimento", texto:"\"Tinha bigodes de foca e braços de homem. Arrastou o menino pra debaixo d'água num piscar de olhos.\""}]}, desaparecido:{foto:"img/ipupiara_bo.jpg", legenda:"Laudo Costeiro", blocos:[{label:"Ocorrência", texto:"Corpo encontrado na praia com fraturas por constrição e remoção cirúrgica dos olhos."}]}}},
+{id:"018", nome:"Cumade Florzinha", regiao:"Nordeste", ameaca:"Sabotagem / Punição Física", abas:{entidade:{foto:"img/florzinha_entidade.jpg", legenda:"Crina Enrolada", blocos:[{label:"Modus Operandi", texto:"Faz tranças indestáveis nas crinas dos cavalos e surra invasores com urtiga. <span class='redacted'>Desativa armadilhas e solta presas</span>."}]}, testemunha:{foto:"img/florzinha_testemunha.jpg", legenda:"Capataz", audio:true, duracao:"01:50", blocos:[{label:"Gravação", texto:"\"Os cachorros voltaram chorando, todos surrados. O cavalo ninguém mais consegue montar.\""}]}, desaparecido:{foto:"img/florzinha_bo.jpg", legenda:"Dano Patrimonial", blocos:[{label:"Ocorrência", texto:"Três cavalos de raça inutilizados por estresse pós-traumático."}]}}},
+{id:"019", nome:"Papa-Figo", regiao:"Nacional", ameaca:"Serial Killer / Tráfico de Órgãos", nota_detetive:"Lenda urbana ou assassino real? Pedir arquivos do IML.", abas:{entidade:{foto:"img/papafigo_entidade.jpg", legenda:"Retrato Falado", blocos:[{label:"Modus Operandi", texto:"Indivíduo esquálido que atrai crianças com doces. O objetivo é a <span class='redacted'>extração e consumo do fígado</span> na crença de cura para a lepra."}]}, testemunha:{foto:"img/papafigo_testemunha.jpg", legenda:"Vizinha", audio:false, blocos:[{label:"Transcrição", texto:"\"Ele carregava um saco de estopa manchado de escuro e ofereceu bala pro meu sobrinho.\""}]}, desaparecido:{foto:"img/papafigo_bo.jpg", legenda:"Autópsia", blocos:[{label:"Ocorrência", texto:"Menor encontrado em terreno baldio com incisão abdominal e ausência do fígado."}]}}},
+{id:"020", nome:"Boitatá", regiao:"Nacional", ameaca:"Incendiária / Ilusão Ótica", abas:{entidade:{foto:"img/boitata_entidade.jpg", legenda:"Solo Carbonizado", blocos:[{label:"Modus Operandi", texto:"Incineração espontânea de áreas invadidas. Induz cegueira permanente em quem cruza seu olhar luminoso."}]}, testemunha:{foto:"img/boitata_testemunha.jpg", legenda:"Pecuarista", audio:false, blocos:[{label:"Depoimento", texto:"\"A cobra de fogo rastejou pelas árvores e não deixou uma folha viva. Eu fechei os olhos pra não cegar.\""}]}, desaparecido:{foto:"img/boitata_bo.jpg", legenda:"B.O. Bombeiros", blocos:[{label:"Ocorrência", texto:"Incêndio em padrão espiral contínuo impossível de origem natural."}]}}},
+{id:"021", nome:"Saci-Pererê", regiao:"Nacional", ameaca:"Sabotagem / Vandalismo", abas:{entidade:{foto:"img/saci_entidade.jpg", legenda:"Redemoinho captado", blocos:[{label:"Modus Operandi", texto:"Invasão rural, contaminação de reservatórios e espalhamento de brasas. Desloca-se via micro-tornados (redemoinhos)."}]}, testemunha:{foto:"img/saci_testemunha.jpg", legenda:"Dona de Casa", audio:true, duracao:"00:34", blocos:[{label:"Gravação", texto:"\"O leite talhou, o feijão queimou e as panelas tavam todas no telhado. Eu escutei a risada.\""}]}, desaparecido:{foto:"img/saci_bo.jpg", legenda:"Polícia Militar", blocos:[{label:"Ocorrência", texto:"Múltiplos chamados de vandalismo sem arrombamento nas residências."}]}}},
+{id:"022", nome:"Mula Sem Cabeça", regiao:"Nacional", ameaca:"Incendiária / Letal", abas:{entidade:{foto:"img/mula_entidade.jpg", legenda:"Ferradura Derretida", blocos:[{label:"Modus Operandi", texto:"Manifestação letal de quinta para sexta-feira. Emite fogo no lugar do crânio, <span class='redacted'>carbonizando qualquer um no caminho</span>."}]}, testemunha:{foto:"img/mula_testemunha.jpg", legenda:"Viajante", audio:false, blocos:[{label:"Transcrição", texto:"\"Ouvimos o relincho e um calor insuportável. A estrada inteira pegou fogo atrás da gente.\""}]}, desaparecido:{foto:"img/mula_bo.jpg", legenda:"Investigação", blocos:[{label:"Ocorrência", texto:"Viatura policial carbonizada na rodovia BR-285. Sem sobreviventes."}]}}},
+{id:"023", nome:"Besta-Fera", regiao:"Nordeste", ameaca:"Pânico Coletivo / Letal", abas:{entidade:{foto:"img/besta_entidade.jpg", legenda:"Marcas de Patas", blocos:[{label:"Modus Operandi", texto:"Criatura quimérica associada a presságios nefastos. Sua corrida pelos povoados atrai matilhas enlouquecidas e causa pânico letal."}]}, testemunha:{foto:"img/besta_testemunha.jpg", legenda:"Sacerdote Local", audio:true, duracao:"02:05", blocos:[{label:"Gravação", texto:"\"Quando as patas bateram nas pedras da rua, os cachorros da cidade inteira começaram a uivar chorando.\""}]}, desaparecido:{foto:"img/besta_bo.jpg", legenda:"Ocorrência Médica", blocos:[{label:"Ocorrência", texto:"Três idosos sofreram parada cardíaca simultânea durante a madrugada."}]}}},
+{id:"024", nome:"Caboclo D'Agua", regiao:"Sudeste", ameaca:"Sabotagem Náutica", nota_detetive:"Colocar carrancas em todos os barcos da patrulha.", abas:{entidade:{foto:"img/caboclo_entidade.jpg", legenda:"Casco Perfurado", blocos:[{label:"Modus Operandi", texto:"Entidade anfíbia que perfura cascos de barcos por baixo, exigindo oferendas (fumo) para poupar a tripulação."}]}, testemunha:{foto:"img/caboclo_testemunha.jpg", legenda:"Barqueiro", audio:false, blocos:[{label:"Transcrição", texto:"\"A mão dele parecia de bronze. Segurou a borda do barco e quase virou a gente no meio do São Francisco.\""}]}, desaparecido:{foto:"img/caboclo_bo.jpg", legenda:"B.O. Capitania", blocos:[{label:"Ocorrência", texto:"Três canoas afundadas no mesmo poço. Vítimas com fraturas nos tornozelos."}]}}},
+{id:"025", nome:"Noiva da Estrada", regiao:"Nacional", ameaca:"Assombração / Acidentes Veiculares", abas:{entidade:{foto:"img/noiva_entidade.jpg", legenda:"Câmera de Tráfego", blocos:[{label:"Modus Operandi", texto:"Projeção espectral nas margens de rodovias. Pede carona e desaparece dentro do veículo em movimento, <span class='redacted'>causando capotamentos fatais</span>."}]}, testemunha:{foto:"img/noiva_testemunha.jpg", legenda:"Caminhoneiro", audio:true, duracao:"03:15", blocos:[{label:"Gravação", texto:"\"Ela entrou no caminhão, pálida. Quando fui perguntar onde ia descer, só tinha o cheiro de flor murcha e banco vazio.\""}]}, desaparecido:{foto:"img/noiva_bo.jpg", legenda:"PRF", blocos:[{label:"Ocorrência", texto:"Aumento de 400% em acidentes fatais na curva do quilômetro 47."}]}}},
+{id:"026", nome:"Caipora", regiao:"Nacional", ameaca:"Manipulação da Fauna", abas:{entidade:{foto:"img/caipora_entidade.jpg", legenda:"Porco do mato gigante", blocos:[{label:"Modus Operandi", texto:"Montado em um caititu, manipula fisicamente as matilhas de caça, virando os cães contra seus donos se houver abate excessivo."}]}, testemunha:{foto:"img/caipora_testemunha.jpg", legenda:"Caçador", audio:false, blocos:[{label:"Transcrição", texto:"\"O assobio rasgou o tímpano. Na mesma hora meus próprios cachorros viraram pra me morder.\""}]}, desaparecido:{foto:"img/caipora_bo.jpg", legenda:"Armas Apreendidas", blocos:[{label:"Ocorrência", texto:"Caçador furtivo encontrado com lacerações caninas graves. Animais desaparecidos."}]}}},
+{id:"027", nome:"Boca de Ouro", regiao:"Sudeste", ameaca:"Extorsão / Violência Urbana", nota_detetive:"Bicheiro místico? Ou lenda suburbana?", abas:{entidade:{foto:"img/boca_entidade.jpg", legenda:"Dentes de Ouro", blocos:[{label:"Modus Operandi", texto:"Aparição noturna de um homem com todos os dentes de ouro. Exige apostas ou pagamentos em encruzilhadas urbanas."}]}, testemunha:{foto:"img/boca_testemunha.jpg", legenda:"Morador de rua", audio:true, duracao:"01:03", blocos:[{label:"Gravação", texto:"\"Ele sorriu no escuro. A luz do poste refletiu no ouro, e ele falou que eu tava devendo a vida pra ele.\""}]}, desaparecido:{foto:"img/boca_bo.jpg", legenda:"Homicídios", blocos:[{label:"Ocorrência", texto:"Corpos encontrados em vielas sem marcas de violência, apenas com uma nota de dinheiro na boca."}]}}}
+];
+
+let casoAtual = null;
+
+function startSystem(){
+  document.getElementById('boot-screen').style.display = 'none';
+  document.getElementById('main-menu').style.display = 'block';
+}
+
+function updateClock(){
+  const el = document.getElementById('live-clock');
+  if(el) el.innerText = new Date().toLocaleString('pt-BR');
+}
+setInterval(updateClock, 1000); updateClock();
+
+const bootLines = [
+  "> Verificando credenciais de acesso...",
+  "> Autenticação nível 4 confirmada.",
+  "> Conectando ao Arquivo Nacional de Ocorrências...",
+  "> Descriptografando 27 dossiês classificados...",
+  "> Integridade: OK. Sistema pronto para inicialização."
+];
+const bootLogEl = document.getElementById('boot-log');
+const accessBtn = document.getElementById('access-btn');
+
+bootLines.forEach((line, i)=>{
+  setTimeout(()=>{ 
+    bootLogEl.innerHTML += `<div>${line}</div>`; 
+    // Exibe o botão de login apenas após a última linha ser impressa
+    if(i === bootLines.length - 1) {
+      setTimeout(() => {
+        accessBtn.style.display = 'inline-block';
+      }, 600);
+    }
+  }, i*400);
+});
+
+const regioes = [...new Set(folcloreDB.map(c=>c.regiao))];
+const filtersEl = document.getElementById('region-filters');
+let filtroAtivo = 'TODAS';
+
+function renderFilters(){
+  filtersEl.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'filter-btn' + (filtroAtivo==='TODAS' ? ' active' : '');
+  allBtn.innerText = 'Todas as Regiões';
+  allBtn.onclick = ()=>{ filtroAtivo='TODAS'; renderFilters(); renderGrid(); };
+  filtersEl.appendChild(allBtn);
+
+  regioes.forEach(r=>{
+    const b = document.createElement('button');
+    b.className = 'filter-btn' + (filtroAtivo===r ? ' active' : '');
+    b.innerText = r;
+    b.onclick = ()=>{ filtroAtivo=r; renderFilters(); renderGrid(); };
+    filtersEl.appendChild(b);
+  });
+}
+
+function threatLevel(ameaca){
+  const a = ameaca.toLowerCase();
+  if(a.includes('letal')||a.includes('extrema')||a.includes('naufrágio')) return {cls:'vermelha', label:'Risco Extremo'};
+  if(a.includes('sequestro')||a.includes('predatória')||a.includes('hipnose')||a.includes('biológica')||a.includes('serial killer')||a.includes('combustão')||a.includes('acidentes')) return {cls:'laranja', label:'Risco Elevado'};
+  if(a.includes('sabotagem')||a.includes('vandalismo')||a.includes('desorientação')||a.includes('extorsão')||a.includes('pânico')) return {cls:'amarela', label:'Risco Moderado'};
+  return {cls:'azul', label:'Monitoramento'};
+}
+
+function renderGrid(){
+  const grid = document.getElementById('cases-grid');
+  grid.innerHTML = '';
+  let visIndex = 0;
+  folcloreDB.forEach((caso, index)=>{
+    if(filtroAtivo!=='TODAS' && caso.regiao!==filtroAtivo) return;
+    const nivel = threatLevel(caso.ameaca);
+    const div = document.createElement('div');
+    div.className = 'case-card';
+    div.style.animationDelay = (visIndex*0.06) + 's';
+    div.onclick = ()=>openCase(index);
+    
+    const bloodHtml = (index % 5 === 0) ? `<div class="card-blood"></div>` : '';
+
+    div.innerHTML = `
+      <div class="case-id">PROC Nº ${caso.id}/2026</div>
+      <div class="case-title">${caso.nome}</div>
+      <div class="case-region">${caso.regiao}</div>
+      <div class="case-threat">Tipo: ${caso.ameaca}</div>
+      <span class="threat-tag threat-${nivel.cls}">CARIMBO: ${nivel.label}</span>
+      ${bloodHtml}
+    `;
+    grid.appendChild(div);
+    visIndex++;
+  });
+}
+
+renderFilters();
+renderGrid();
+
+function openCase(index){
+  document.getElementById('main-menu').style.display = 'none';
+  document.getElementById('case-file').style.display = 'block';
+
+  casoAtual = folcloreDB[index];
+  document.getElementById('display-name').innerText = `ARQUIVO: ${casoAtual.nome}`;
+  document.getElementById('display-region').innerText = casoAtual.regiao;
+  document.getElementById('display-threat').innerText = casoAtual.ameaca;
+  document.getElementById('display-casenumber').innerText = `Dossiê Físico Nº ${casoAtual.id} — Divisão de Ocorrências`;
+
+  const nivel = threatLevel(casoAtual.ameaca);
+  const badge = document.getElementById('display-classbadge');
+  badge.innerText = nivel.label.toUpperCase();
+  const badgeColors = { vermelha:'#8a0303', laranja:'#a34700', amarela:'#8a7000', azul:'#1d405e' };
+  badge.style.borderColor = badgeColors[nivel.cls];
+  badge.style.color = badgeColors[nivel.cls];
+  
+  const noteContainer = document.getElementById('dynamic-note');
+  if(casoAtual.nota_detetive) {
+      noteContainer.innerHTML = `<div class="detetive-note" style="top: 20px; right: 20px;">${casoAtual.nota_detetive}</div>`;
+  } else {
+      noteContainer.innerHTML = '';
+  }
+
+  changeTab('entidade');
+  window.scrollTo(0,0);
+}
+
+function changeTab(aba){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`btn-${aba}`).classList.add('active');
+
+  const evidenceBoard = document.querySelector('.evidence-board');
+  const textBlocks = document.getElementById('display-text-blocks');
+  const uploadSection = document.getElementById('evidence-upload-section');
+
+  if(aba === 'evidencias'){
+    evidenceBoard.style.display = 'none';
+    textBlocks.style.display = 'none';
+    uploadSection.style.display = 'block';
+    renderEvidenceGallery();
+    const tabBody = document.getElementById('tab-body');
+    tabBody.classList.remove('fading');
+    void tabBody.offsetWidth;
+    tabBody.classList.add('fading');
+    return;
+  }
+  evidenceBoard.style.display = '';
+  textBlocks.style.display = '';
+  uploadSection.style.display = 'none';
+
+  const dados = casoAtual.abas[aba];
+  document.getElementById('display-caption').innerText = dados.legenda;
+  document.getElementById('display-photo').style.backgroundImage = `url('${dados.foto}')`;
+  const stampLabels = { entidade:'EVIDÊNCIA', testemunha:'DEPOIMENTO', desaparecido:'ANEXO' };
+  document.getElementById('display-stamp').innerText = stampLabels[aba];
+
+  const container = document.getElementById('display-text-blocks');
+  container.innerHTML = '';
+  
+  if(aba === 'testemunha' && dados.audio){
+      const duration = dados.duracao || "03:14";
+      const audioUI = document.createElement('div');
+      audioUI.className = 'audio-player';
+      audioUI.innerHTML = `
+        <span class="audio-play" onclick="alert('Gravação bloqueada pelo perito responsável.')">▶</span>
+        <div class="audio-wave"></div>
+        <span class="audio-time">FITA CASSETE - [${duration}]</span>
+      `;
+      container.appendChild(audioUI);
+  }
+
+  dados.blocos.forEach(b=>{
+    const label = document.createElement('span');
+    label.className = 'section-label';
+    label.innerText = b.label + ':';
+    const p = document.createElement('p');
+    p.className = 'dossier-p';
+    p.innerHTML = b.texto; 
+    container.appendChild(label);
+    container.appendChild(p);
+  });
+
+  const tabBody = document.getElementById('tab-body');
+  tabBody.classList.remove('fading');
+  void tabBody.offsetWidth;
+  tabBody.classList.add('fading');
+}
+
+function closeCase(){
+  document.getElementById('case-file').style.display = 'none';
+  document.getElementById('main-menu').style.display = 'block';
+}
+
+// ===== Evidências da Turma (upload direto para o GitHub, visível para todo mundo) =====
+const GH_OWNER = 'Zandrafir';
+const GH_REPO = 'folclore-siif-v2';
+const GH_BRANCH = 'main';
+
+function getGhToken(){ return localStorage.getItem('siif_gh_token') || ''; }
+function setGhToken(t){ if(t){ localStorage.setItem('siif_gh_token', t); } else { localStorage.removeItem('siif_gh_token'); } }
+
+function updateTokenStatus(){
+  const el = document.getElementById('token-status');
+  if(!el) return;
+  el.innerText = getGhToken() ? '🔓 Token configurado neste aparelho' : '🔒 Token não configurado — só é preciso para ENVIAR fotos';
+}
+
+function configurarToken(){
+  const jaTem = !!getGhToken();
+  const t = prompt(
+    jaTem
+      ? 'Já existe um token salvo neste navegador.\n\nCole um novo token para substituir, ou apague o texto e confirme para remover o token salvo.'
+      : 'Cole aqui o token de acesso do GitHub (fine-grained, com permissão "Contents: Read and write" apenas no repositório folclore-siif-v2).\n\nEle fica salvo só neste navegador/aparelho e é necessário apenas para ENVIAR fotos — qualquer pessoa consegue VER as evidências sem token.',
+    ''
+  );
+  if(t === null) return; // cancelou
+  setGhToken(t.trim());
+  updateTokenStatus();
+}
+
+function fileToBase64Jpeg(file, maxWidth, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w > maxWidth){ h = Math.round(h * (maxWidth / w)); w = maxWidth; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl.split(',')[1]); // só o base64, sem o prefixo data:
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function ghPutFile(path, base64Content, message){
+  const token = getGhToken();
+  const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
+    body: JSON.stringify({ message, content: base64Content, branch: GH_BRANCH })
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.message || `Erro HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function handleEvidenciaUpload(event){
+  const files = Array.from(event.target.files || []);
+  if(!files.length) return;
+  if(!getGhToken()){
+    alert('Configure o token de upload primeiro (botão "Configurar Token" acima).');
+    event.target.value = '';
+    return;
+  }
+  const statusEl = document.getElementById('upload-status');
+  const caseId = casoAtual.id;
+  let ok = 0, fail = 0;
+  for(const file of files){
+    statusEl.innerText = `Enviando ${file.name}...`;
+    try{
+      const base64 = await fileToBase64Jpeg(file, 1200, 0.78);
+      const safeName = file.name.replace(/[^a-zA-Z0-9.\-]/g, '_');
+      const path = `evidencias/${caseId}/${Date.now()}-${safeName}.jpg`;
+      await ghPutFile(path, base64, `Evidência da turma: ${casoAtual.nome} (${file.name})`);
+      ok++;
+    }catch(err){
+      console.error(err);
+      fail++;
+    }
+  }
+  statusEl.innerText = fail
+    ? `${ok} enviada(s), ${fail} falharam. Verifique o token (permissão Contents: Read and write neste repositório).`
+    : `${ok} evidência(s) publicada(s) no GitHub! Já aparece para todo mundo.`;
+  event.target.value = '';
+  renderEvidenceGallery();
+}
+
+async function removeEvidencia(path, sha){
+  if(!getGhToken()){ alert('Configure o token para poder remover evidências.'); return; }
+  if(!confirm('Remover esta evidência do GitHub? Essa ação não pode ser desfeita.')) return;
+  try{
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `token ${getGhToken()}`, 'Accept': 'application/vnd.github+json' },
+      body: JSON.stringify({ message: `Remove evidência ${path}`, sha, branch: GH_BRANCH })
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.message || `Erro HTTP ${res.status}`);
+    }
+    renderEvidenceGallery();
+  }catch(err){
+    alert('Erro ao remover: ' + err.message);
+  }
+}
+
+async function renderEvidenceGallery(){
+  const gallery = document.getElementById('evidence-gallery');
+  if(!gallery) return;
+  updateTokenStatus();
+  gallery.innerHTML = '<p class="evidence-empty">Carregando evidências…</p>';
+  const caseId = casoAtual.id;
+  try{
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/evidencias/${caseId}?t=${Date.now()}`, {
+      headers: { 'Accept': 'application/vnd.github+json' }
+    });
+    if(res.status === 404){
+      gallery.innerHTML = '<p class="evidence-empty">Nenhuma evidência anexada ainda. Use o botão acima para enviar fotos do trabalho da turma sobre esta lenda.</p>';
+      return;
+    }
+    if(!res.ok) throw new Error('Falha ao carregar evidências');
+    const items = await res.json();
+    if(!Array.isArray(items) || !items.length){
+      gallery.innerHTML = '<p class="evidence-empty">Nenhuma evidência anexada ainda.</p>';
+      return;
+    }
+    items.sort((a,b) => a.name < b.name ? 1 : -1);
+    gallery.innerHTML = items.map(it => `
+      <div class="evidence-item">
+        <button class="evidence-remove" onclick="removeEvidencia('${it.path}','${it.sha}')" title="Remover">&times;</button>
+        <img src="${it.download_url}" alt="Evidência anexada pela turma" loading="lazy">
+      </div>
+    `).join('');
+  }catch(err){
+    console.error(err);
+    gallery.innerHTML = '<p class="evidence-empty">Não foi possível carregar as evidências agora. Verifique sua conexão com a internet.</p>';
+  }
+}
+</script>
+</body>
+</html>
