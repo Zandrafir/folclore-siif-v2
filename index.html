@@ -201,7 +201,7 @@
   .game-feedback{text-align:center;margin-top:16px;font-size:.95em;min-height:1.4em;}
   .game-feedback.ok{color:#7fbf6a;}
   .game-feedback.fail{color:var(--blood-red-bright);}
-  .game-warning{background:rgba(138,3,3,.15);border:1px solid var(--blood-red);color:#e39;color:#f2a;padding:12px 16px;font-size:.8em;margin-bottom:18px;text-align:center;color:#ff8a8a;}
+  .game-warning{background:rgba(138,3,3,.15);border:1px solid var(--blood-red);color:#ff8a8a;padding:12px 16px;font-size:.8em;margin-bottom:18px;text-align:center;}
   .game-summary{text-align:center;padding:40px 20px;}
   .game-summary h2{color:var(--amber);}
   .game-progress{text-align:center;color:var(--text-muted);font-size:.8em;margin-bottom:6px;}
@@ -422,6 +422,58 @@
   .audio-wave {flex:1;height:24px;background:repeating-linear-gradient(90deg,#7fbf6a 0,#7fbf6a 3px,transparent 3px,transparent 6px);opacity:0.7;}
   
   footer.foot{text-align:center;color:#555;font-size:.75em;padding:22px;letter-spacing:1px;position:relative;z-index:1;}
+
+  /* ===== Responsivo — tablet ===== */
+  @media (max-width:900px){
+    .container{padding:18px;}
+    header{font-size:1.35em;padding:18px 14px 14px;}
+    .dossier-wrapper{padding:24px 20px;}
+    .tab-body{gap:20px;}
+    .evidence-board{max-width:100%;}
+  }
+
+  /* ===== Responsivo — celular ===== */
+  @media (max-width:600px){
+    .container{padding:12px;}
+    header{font-size:1.1em;letter-spacing:1.5px;padding:16px 10px 12px;}
+    header .badge-icon{width:38px;margin-right:8px;}
+    header .sub{letter-spacing:2px;}
+    .tape-band span{letter-spacing:3px;}
+    .topnav{gap:6px;padding:10px;}
+    .topnav-btn{padding:8px 10px;font-size:.72em;}
+    .map-wrapper{padding:12px;margin:14px auto 8px;}
+    .map-wrapper::before{font-size:.55em;letter-spacing:1.5px;}
+    .region-preview{padding:14px;}
+    .mini-card{width:100px;font-size:.68em;}
+    .grid{grid-template-columns:1fr;gap:24px;}
+    .case-card{padding:18px;}
+    .case-title{font-size:1.15em;}
+    .toolbar{flex-direction:column;align-items:stretch;}
+    .btn{width:100%;text-align:center;padding:14px 10px;}
+    .dossier-wrapper{padding:18px 14px;}
+    h2.dossier-title{font-size:1.4em;}
+    .dossier-meta{gap:10px;font-size:.82em;}
+    .tabs{gap:6px;}
+    .tab-btn{padding:9px 12px;font-size:.85em;flex:1 1 auto;}
+    .tab-body{flex-direction:column;gap:22px;}
+    .evidence-board{max-width:100%;}
+    .photo-frame{transform:none;}
+    .evidence-gallery{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px 12px;}
+    .detetive-note{position:static;display:block;margin:10px 0;transform:none;max-width:100%;}
+    .activity-cards{grid-template-columns:1fr;gap:18px;margin:18px auto;}
+    .activity-card{padding:22px 18px;}
+    .game-board{padding:18px;}
+    .game-guess-row select,.game-guess-row input{min-width:0;width:100%;}
+    .lupa-watermark{display:none;}
+    .blood-1,.blood-2{display:none;}
+    p.dossier-p{text-align:left;}
+  }
+
+  @media (max-width:400px){
+    header{font-size:.95em;}
+    .case-title{font-size:1.05em;}
+    .mini-card{width:88px;}
+  }
 </style>
 </head>
 <body>
