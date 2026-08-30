@@ -307,6 +307,9 @@ p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px
   .container{padding:18px;}
   header.dip-header{font-size:1.3em;padding:18px 14px 14px;}
   .dossier-wrapper{padding:24px 20px;}
+  /* Abaixo de 900px o post-it fixo no canto do dossiê passa a sobrepor o selo de risco ao lado do título —
+     em telas estreitas (tablets/totens em pé) ele vira um bloco normal, acima do título, sem sobrepor nada. */
+  .detetive-note{position:relative;top:auto;right:auto;left:auto;margin:0 auto 20px;transform:rotate(-1.5deg);width:min(80%,260px);}
 }
 @media (max-width:600px){
   .container{padding:12px;}
