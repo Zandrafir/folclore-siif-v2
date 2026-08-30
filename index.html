@@ -202,6 +202,64 @@ p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px
 .clue-img-wrap{width:220px;height:160px;margin:10px auto;}
 .clue-img-wrap.blur .slot img{filter:blur(8px);}
 
+/* ===== Cronômetro (modo cronometrado) ===== */
+.timer-bar{max-width:760px;margin:0 auto 12px;height:22px;background:#0d0d0d;border:1px solid #444;position:relative;overflow:hidden;}
+.timer-fill{height:100%;background:linear-gradient(90deg,#7fbf6a,#4f9a3a);transition:width 1s linear;}
+.timer-fill.low{background:linear-gradient(90deg,#ff8a8a,var(--blood-red-bright));animation:timerPulse .6s ease infinite alternate;}
+@keyframes timerPulse{from{opacity:1;}to{opacity:.6;}}
+.timer-value{position:absolute;top:0;right:8px;bottom:0;display:flex;align-items:center;font-family:'Courier Prime',monospace;font-size:.8em;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);}
+
+/* ===== Toggle de modo cronometrado (Atividades) ===== */
+.timed-toggle-row{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 auto 22px;color:var(--text-muted);font-size:.85em;position:relative;z-index:1;}
+.timed-toggle{position:relative;display:inline-block;width:46px;height:24px;flex:none;}
+.timed-toggle input{opacity:0;width:0;height:0;}
+.timed-toggle-slider{position:absolute;inset:0;background:#333;border:1px solid #555;border-radius:24px;cursor:pointer;transition:.2s;}
+.timed-toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:2px;background:#ccc;border-radius:50%;transition:.2s;}
+.timed-toggle input:checked + .timed-toggle-slider{background:rgba(127,191,106,.35);border-color:#7fbf6a;}
+.timed-toggle input:checked + .timed-toggle-slider::before{transform:translateX(21px);background:#7fbf6a;}
+
+/* ===== Painel de Ranking (Patentes S.I.I.F) ===== */
+.rank-panel{max-width:900px;margin:0 auto 24px;background:var(--panel);border:1px solid #333;padding:20px 22px;position:relative;z-index:1;}
+.rank-current{display:flex;align-items:center;gap:16px;margin-bottom:16px;}
+.rank-current-badge{font-size:2.2em;flex:none;filter:drop-shadow(0 2px 6px rgba(217,164,65,.4));}
+.rank-current-title{color:var(--amber);font-family:'Special Elite',monospace;font-size:1.15em;}
+.rank-current-xp{color:var(--text-muted);font-size:.8em;margin-top:2px;}
+.rank-progress-bar{height:8px;background:#0d0d0d;border:1px solid #444;margin-top:8px;max-width:420px;}
+.rank-progress-fill{height:100%;background:linear-gradient(90deg,#d9a441,#8a6a1f);transition:width .3s ease;}
+.rank-ladder{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;}
+.rank-tier{display:flex;flex-direction:column;gap:2px;padding:8px 10px;background:#0d0d0d;border:1px solid #2a2a2a;font-size:.72em;color:#777;}
+.rank-tier .rank-tier-n{font-family:'Courier Prime',monospace;color:#555;}
+.rank-tier .rank-tier-title{color:#999;letter-spacing:.5px;}
+.rank-tier .rank-tier-min{color:#555;}
+.rank-tier.done{border-color:#3a3a1f;}
+.rank-tier.done .rank-tier-title{color:#8a9a6a;}
+.rank-tier.current{border-color:var(--amber);background:rgba(217,164,65,.08);}
+.rank-tier.current .rank-tier-title{color:var(--amber);font-weight:bold;}
+.rank-tier.current .rank-tier-n{color:var(--amber);}
+
+/* ===== Detetive de Eliminação ===== */
+.suspect-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:18px 0;}
+.suspect-card{background:#0d0d0d;border:1px solid #444;padding:14px;text-align:center;transition:.2s;}
+.suspect-card .suspect-name{color:#ddd;font-family:'Special Elite',monospace;margin-bottom:4px;}
+.suspect-card .suspect-region{color:var(--text-muted);font-size:.75em;margin-bottom:10px;}
+.suspect-card .suspect-actions{display:flex;gap:6px;justify-content:center;}
+.btn-sm{padding:7px 10px;font-size:.72em;}
+.btn-accuse{border-color:var(--blood-red);color:#ff8a8a;}
+.btn-accuse:hover:not(:disabled){border-color:var(--blood-red-bright);box-shadow:0 0 10px rgba(212,0,0,.4);}
+.suspect-card.eliminated{opacity:.35;}
+.suspect-card.eliminated .suspect-name{text-decoration:line-through;}
+.suspect-card.revealed-target{border-color:#7fbf6a;box-shadow:0 0 14px rgba(127,191,106,.4);}
+.btn:disabled,.btn-sm:disabled{opacity:.3;cursor:not-allowed;}
+
+/* ===== Reconhecimento Visual ===== */
+.rv-photo-frame{width:220px;height:220px;margin:0 auto 20px;border:3px solid #444;box-shadow:0 4px 18px rgba(0,0,0,.6);overflow:hidden;background:#111;}
+.rv-photo-frame img{width:100%;height:100%;object-fit:cover;display:block;}
+.rv-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;max-width:600px;margin:0 auto 18px;}
+.rv-option{background:#1c1c1c;color:#fff;border:1px solid #444;padding:14px 10px;cursor:pointer;font-family:inherit;font-size:.95em;transition:.18s;}
+.rv-option:hover:not(:disabled){border-color:var(--amber);box-shadow:0 0 12px rgba(217,164,65,.3);}
+.rv-option.correct{border-color:#7fbf6a;background:rgba(127,191,106,.15);color:#9fdf8a;}
+.rv-option.wrong{border-color:var(--blood-red-bright);background:rgba(212,0,0,.15);color:#ff8a8a;}
+
 /* ===== Níveis de ameaça (dinâmico) ===== */
 .case-card.vermelha{background-color:#c9a68a;border:1px solid #d40000;}
 .case-card.laranja{background-color:#cbb389;border:1px solid #a34700;}
@@ -321,7 +379,20 @@ const folcloreDB = [
    ========================================================================= */
 
 var SENHA_ACESSO = 'Ephim';
-var QTD_CASOS_DESVENDE = 20;
+
+/* Patentes do S.I.I.F — ranking local (localStorage), do menor ao maior XP acumulado. */
+var RANK_TIERS = [
+  { title: 'Investigador por Hobby', min: 0 },
+  { title: 'Auxiliar de Campo', min: 80 },
+  { title: 'Agente Júnior', min: 200 },
+  { title: 'Agente de Campo', min: 380 },
+  { title: 'Investigador Associado', min: 600 },
+  { title: 'Investigador Sênior', min: 870 },
+  { title: 'Detetive Nível Bronze', min: 1200 },
+  { title: 'Detetive Nível Prata', min: 1600 },
+  { title: 'Detetive Nível Ouro', min: 2100 },
+  { title: 'Detetive Nível Diamante', min: 2700 },
+];
 
 var state = {
   screen: 'gate',
@@ -341,6 +412,19 @@ var state = {
 
   /* Mapeamento de Campo (associar lenda x região) */
   amIndex: 0, amRounds: [], amScore: 0, amAssign: {}, amFeedback: '', amFinished: false,
+
+  /* Detetive de Eliminação */
+  detIndex: 0, detTotal: 6, detScore: 0, detFinished: false, detSuspects: [], detTargetId: '',
+  detPistas: [], detPistaIndex: 0, detEliminados: {}, detFeedback: '', detFeedbackOk: null, detRoundOver: false,
+
+  /* Reconhecimento Visual */
+  rvIndex: 0, rvTotal: 10, rvScore: 0, rvFinished: false, rvCurrent: null, rvFeedback: '', rvFeedbackOk: null,
+
+  /* Modo cronometrado (global) */
+  timedMode: false, timeLeft: 0, timeTotal: 0,
+
+  /* XP recém-ganho (exibido no resumo final de cada atividade) */
+  lastXpGain: 0,
 };
 
 var App = {
@@ -409,6 +493,59 @@ var App = {
   closeLightbox: function () {
     var ov = document.getElementById('lightbox-overlay');
     if (ov) ov.classList.remove('open');
+  },
+
+  /* ---------- Ranking / XP (persistido em localStorage) ---------- */
+  getXP: function () {
+    try { return parseInt(localStorage.getItem('siif_xp'), 10) || 0; } catch (e) { return 0; }
+  },
+  addXP: function (n) {
+    if (!n) return 0;
+    var total = App.getXP() + n;
+    try { localStorage.setItem('siif_xp', String(total)); } catch (e) {}
+    state.lastXpGain = n;
+    return total;
+  },
+  getRank: function (xp) {
+    if (xp === undefined) xp = App.getXP();
+    var atual = RANK_TIERS[0];
+    var proxima = null;
+    for (var i = 0; i < RANK_TIERS.length; i++) {
+      if (xp >= RANK_TIERS[i].min) atual = RANK_TIERS[i];
+      else { proxima = RANK_TIERS[i]; break; }
+    }
+    return { title: atual.title, index: RANK_TIERS.indexOf(atual), xp: xp, proxima: proxima };
+  },
+
+  /* ---------- Modo Cronometrado ---------- */
+  _timerInterval: null,
+  loadTimedMode: function () {
+    try { state.timedMode = localStorage.getItem('siif_timed_mode') === '1'; } catch (e) { state.timedMode = false; }
+  },
+  toggleTimedMode: function () {
+    state.timedMode = !state.timedMode;
+    try { localStorage.setItem('siif_timed_mode', state.timedMode ? '1' : '0'); } catch (e) {}
+    App.render();
+  },
+  stopTimer: function () {
+    if (App._timerInterval) { clearInterval(App._timerInterval); App._timerInterval = null; }
+  },
+  startTimer: function (seconds, onExpire) {
+    App.stopTimer();
+    if (!state.timedMode) return;
+    state.timeTotal = seconds; state.timeLeft = seconds;
+    App._timerInterval = setInterval(function () {
+      state.timeLeft--;
+      var fill = document.getElementById('timer-fill');
+      var val = document.getElementById('timer-value');
+      if (fill) fill.style.width = Math.max(0, (state.timeLeft / state.timeTotal) * 100) + '%';
+      if (val) val.textContent = Math.max(0, state.timeLeft) + 's';
+      if (fill && state.timeLeft <= Math.ceil(state.timeTotal * 0.3)) fill.classList.add('low');
+      if (state.timeLeft <= 0) {
+        App.stopTimer();
+        onExpire();
+      }
+    }, 1000);
   },
   refreshSlot: function (id) {
     var el = document.getElementById('slot-' + id);
@@ -485,9 +622,9 @@ var App = {
   stopSpeech: function () {
     if ('speechSynthesis' in window && App.speakingCaseId) { window.speechSynthesis.cancel(); App.speakingCaseId = null; }
   },
-  goToMap: function () { App.stopSpeech(); state.screen = 'map'; state.mapPreviewRegion = null; state.pinPoint = null; state.linePoints = null; App.render(); },
-  goToFiles: function (region) { App.stopSpeech(); state.screen = 'files'; state.regionFilter = region || 'TODAS'; App.render(); },
-  goToActivities: function () { App.stopSpeech(); state.screen = 'activities'; App.render(); },
+  goToMap: function () { App.stopSpeech(); App.stopTimer(); state.screen = 'map'; state.mapPreviewRegion = null; state.pinPoint = null; state.linePoints = null; App.render(); },
+  goToFiles: function (region) { App.stopSpeech(); App.stopTimer(); state.screen = 'files'; state.regionFilter = region || 'TODAS'; App.render(); },
+  goToActivities: function () { App.stopSpeech(); App.stopTimer(); state.screen = 'activities'; App.render(); },
   setRegionFilter: function (r) { state.regionFilter = r; App.render(); },
 
   /* ---------- mapa ---------- */
@@ -520,8 +657,8 @@ var App = {
   confirmRegionSelected: function () { if (state.mapPreviewRegion) App.goToFiles(state.mapPreviewRegion); },
 
   /* ---------- arquivos / dossiê ---------- */
-  openCase: function (id) { App.stopSpeech(); state.screen = 'dossier'; state.openCaseId = id; state.activeTab = 'entidade'; App.render(); },
-  closeCase: function () { App.stopSpeech(); state.screen = 'files'; App.render(); },
+  openCase: function (id) { App.stopSpeech(); App.stopTimer(); state.screen = 'dossier'; state.openCaseId = id; state.activeTab = 'entidade'; App.render(); },
+  closeCase: function () { App.stopSpeech(); App.stopTimer(); state.screen = 'files'; App.render(); },
   changeTab: function (tab) { if (tab !== 'testemunha') App.stopSpeech(); state.activeTab = tab; App.render(); },
   alertAudioLocked: function () { window.alert('Gravação bloqueada pelo perito responsável.'); },
 
@@ -569,7 +706,6 @@ var App = {
   iniciarJogo: function (tipo) {
     var db = App.db();
     var ids = App.embaralhar(db.map(function (c) { return c.id; }));
-    if (tipo === 'desvende') ids = ids.slice(0, Math.min(QTD_CASOS_DESVENDE, ids.length));
     state.screen = 'game'; state.gameType = tipo; state.gameCaseIds = ids;
     state.gameIndex = 0; state.gamePoints = 0; state.gameCorrect = 0; state.gameFinished = false;
     App.render();
@@ -583,36 +719,20 @@ var App = {
   },
   startRound: function () {
     var db = App.db();
-    var caso = App.currentGameCase();
     var options = App.embaralhar(db).map(function (c) { return { id: c.id, nome: c.nome }; });
-    state.gameShowedBO = false; state.gameClueIndex = 1; state.gameGuessId = '';
+    state.gameShowedBO = false; state.gameGuessId = '';
     state.gameFeedback = ''; state.gameFeedbackOk = null; state.gameOptions = options;
-    if (state.gameType === 'desvende' && caso) state.gameClues = App.montarPistasMisterio(caso);
     App.render();
-  },
-  montarPistasMisterio: function (caso) {
-    var dep = App.removerTags(caso.abas.testemunha.blocos.map(function (b) { return b.texto; }).join(' '));
-    var metade = Math.ceil(dep.length / 2);
-    var corte = dep.indexOf(' ', metade);
-    if (corte === -1) corte = metade;
-    var fragmento = dep.slice(0, corte).trim() + '...';
-    return [
-      { label: 'Pista 1 — Fragmento do depoimento', tipo: 'texto', conteudo: fragmento, pts: 15 },
-      { label: 'Pista 2 — Depoimento completo da testemunha', tipo: 'texto', conteudo: dep, pts: 10 },
-      { label: 'Pista 3 — Retrato / evidência (borrado)', tipo: 'imagem', slotId: 'photo-' + caso.id + '-entidade', blur: true, pts: 7 },
-      { label: 'Pista 4 — Retrato / evidência (nítido)', tipo: 'imagem', slotId: 'photo-' + caso.id + '-entidade', blur: false, pts: 5 },
-    ];
+    App.startTimer(30, function () { App.pularRodada(); });
   },
   revealBO: function () { state.gameShowedBO = true; App.render(); },
-  revealNextClue: function () { if (state.gameClueIndex < state.gameClues.length) { state.gameClueIndex++; App.render(); } },
   onGuessChange: function (val) { state.gameGuessId = val; },
   confirmarPalpite: function () {
     var caso = App.currentGameCase();
     if (!state.gameGuessId || !caso) return;
     if (state.gameGuessId === caso.id) {
-      var pontos;
-      if (state.gameType === 'desvende') pontos = state.gameClues[state.gameClueIndex - 1].pts;
-      else pontos = state.gameShowedBO ? 5 : 10;
+      App.stopTimer();
+      var pontos = state.gameShowedBO ? 5 : 10;
       state.gamePoints += pontos; state.gameCorrect++;
       state.gameFeedback = '✔ Correto! Era ' + caso.nome + '. +' + pontos + ' pontos.';
       state.gameFeedbackOk = true;
@@ -626,12 +746,18 @@ var App = {
   },
   pularRodada: function () { App.proximaRodada(); },
   proximaRodada: function () {
+    App.stopTimer();
     var next = state.gameIndex + 1;
-    if (next >= state.gameCaseIds.length) { state.gameFinished = true; App.render(); }
+    if (next >= state.gameCaseIds.length) {
+      state.gameFinished = true;
+      App.addXP(state.gameCorrect * 5);
+      App.render();
+    }
     else { state.gameIndex = next; App.render(); setTimeout(function () { App.startRound(); }, 0); }
   },
   exitGame: function () {
     if (!window.confirm('Sair agora vai fazer você perder o progresso desta investigação. Sair mesmo assim?')) return;
+    App.stopTimer();
     state.screen = 'activities'; App.render();
   },
 
@@ -642,6 +768,7 @@ var App = {
     state.vfFeedback = ''; state.vfFeedbackOk = null;
     App.buildVFStatement();
     App.render();
+    App.startTimer(15, function () { App.answerVF(!state.vfCurrent.isTrue); });
   },
   buildVFStatement: function () {
     var db = App.db();
@@ -678,6 +805,7 @@ var App = {
   },
   answerVF: function (resposta) {
     if (!state.vfCurrent) return;
+    App.stopTimer();
     var acertou = resposta === state.vfCurrent.isTrue;
     if (acertou) { state.vfScore++; state.vfFeedback = '✔ Correto.'; state.vfFeedbackOk = true; }
     else { state.vfFeedback = '✘ Errado — a afirmação era ' + (state.vfCurrent.isTrue ? 'VERDADEIRA' : 'FALSA') + '.'; state.vfFeedbackOk = false; }
@@ -686,11 +814,15 @@ var App = {
   },
   nextVF: function () {
     var next = state.vfIndex + 1;
-    if (next >= state.vfTotal) { state.vfFinished = true; App.render(); }
-    else { state.vfIndex = next; App.buildVFStatement(); App.render(); }
+    if (next >= state.vfTotal) { state.vfFinished = true; App.addXP(state.vfScore * 8); App.render(); }
+    else {
+      state.vfIndex = next; App.buildVFStatement(); App.render();
+      App.startTimer(15, function () { App.answerVF(!state.vfCurrent.isTrue); });
+    }
   },
   exitGameVF: function () {
     if (!window.confirm('Sair agora vai encerrar o teste de campo. Sair mesmo assim?')) return;
+    App.stopTimer();
     state.screen = 'activities'; App.render();
   },
 
@@ -710,34 +842,149 @@ var App = {
   startAssocieRound: function () {
     state.amAssign = {};
     state.amFeedback = '';
+    App.startTimer(30, function () { App.checkAssocie(true); });
   },
   assignAssocie: function (caseId, regiao) {
     state.amAssign[caseId] = regiao;
     App.render();
   },
-  checkAssocie: function () {
+  checkAssocie: function (forcado) {
     var rodada = state.amRounds[state.amIndex] || [];
-    if (Object.keys(state.amAssign).length < rodada.length) {
+    if (!forcado && Object.keys(state.amAssign).length < rodada.length) {
       state.amFeedback = 'Associe todas as lendas da rodada antes de confirmar.';
       App.render();
       return;
     }
+    App.stopTimer();
     var acertos = 0;
     rodada.forEach(function (c) { if (state.amAssign[c.id] === c.regiao) acertos++; });
     state.amScore += acertos;
-    state.amFeedback = acertos === rodada.length
+    state.amFeedback = (forcado ? '⏱ Tempo esgotado! ' : '') + (acertos === rodada.length
       ? '✔ Rodada perfeita! ' + acertos + '/' + rodada.length + ' corretas.'
-      : acertos + ' de ' + rodada.length + ' associações corretas.';
+      : acertos + ' de ' + rodada.length + ' associações corretas.');
     App.render();
     setTimeout(function () { App.nextAssocie(); }, 1600);
   },
   nextAssocie: function () {
     var next = state.amIndex + 1;
-    if (next >= state.amRounds.length) { state.amFinished = true; App.render(); }
+    if (next >= state.amRounds.length) { state.amFinished = true; App.addXP(state.amScore * 4); App.render(); }
     else { state.amIndex = next; App.startAssocieRound(); App.render(); }
   },
   exitGameAssocie: function () {
     if (!window.confirm('Sair agora vai encerrar o mapeamento de campo. Sair mesmo assim?')) return;
+    App.stopTimer();
+    state.screen = 'activities'; App.render();
+  },
+
+  /* ---------- Detetive de Eliminação ---------- */
+  iniciarJogoDetetive: function () {
+    state.screen = 'gamedet';
+    state.detIndex = 0; state.detTotal = 6; state.detScore = 0; state.detFinished = false;
+    App.startDetetiveRound();
+    App.render();
+  },
+  startDetetiveRound: function () {
+    var db = App.db();
+    var embaralhado = App.embaralhar(db);
+    var alvo = embaralhado[0];
+    var suspeitos = App.embaralhar(embaralhado.slice(1, 6).concat([alvo]));
+    var trechoMO = App.removerTags(alvo.abas.entidade.blocos[0].texto).split('. ')[0] + '.';
+    state.detSuspects = suspeitos;
+    state.detTargetId = alvo.id;
+    state.detPistas = [
+      'O arquivo do culpado está catalogado na região ' + alvo.regiao + '.',
+      'A classificação de ameaça registrada é: "' + alvo.ameaca + '".',
+      'Trecho do modus operandi: "' + trechoMO + '"',
+    ];
+    state.detPistaIndex = 1;
+    state.detEliminados = {};
+    state.detFeedback = ''; state.detFeedbackOk = null; state.detRoundOver = false;
+    App.render();
+    App.startTimer(25, function () { App.avancarPistaDet(true); });
+  },
+  toggleEliminarSuspeito: function (id) {
+    if (state.detRoundOver) return;
+    if (state.detEliminados[id]) delete state.detEliminados[id];
+    else state.detEliminados[id] = true;
+    App.render();
+  },
+  avancarPistaDet: function (peloTempo) {
+    App.stopTimer();
+    if (state.detRoundOver) return;
+    if (state.detPistaIndex < state.detPistas.length) {
+      state.detPistaIndex++;
+      App.render();
+      App.startTimer(25, function () { App.avancarPistaDet(true); });
+    } else if (peloTempo) {
+      App.confirmarSuspeitoFinal(null);
+    }
+  },
+  confirmarSuspeitoFinal: function (id) {
+    if (state.detRoundOver) return;
+    App.stopTimer();
+    state.detRoundOver = true;
+    var acertou = id === state.detTargetId;
+    var pontos = 0;
+    if (acertou) {
+      pontos = Math.max(30 - (state.detPistaIndex - 1) * 10, 10);
+      state.detScore += pontos;
+    }
+    var alvo = null;
+    for (var i = 0; i < state.detSuspects.length; i++) if (state.detSuspects[i].id === state.detTargetId) alvo = state.detSuspects[i];
+    state.detFeedback = acertou
+      ? '✔ Caso encerrado! Era mesmo ' + (alvo ? alvo.nome : '') + '. +' + pontos + ' pontos.'
+      : '✘ Suspeito errado. O verdadeiro culpado era ' + (alvo ? alvo.nome : '') + '.';
+    state.detFeedbackOk = acertou;
+    App.render();
+    setTimeout(function () { App.nextDetetive(); }, 2200);
+  },
+  nextDetetive: function () {
+    var next = state.detIndex + 1;
+    if (next >= state.detTotal) { state.detFinished = true; App.addXP(state.detScore); App.render(); }
+    else { state.detIndex = next; App.startDetetiveRound(); }
+  },
+  exitGameDetetive: function () {
+    if (!window.confirm('Sair agora vai encerrar a investigação. Sair mesmo assim?')) return;
+    App.stopTimer();
+    state.screen = 'activities'; App.render();
+  },
+
+  /* ---------- Reconhecimento Visual ---------- */
+  iniciarJogoRV: function () {
+    state.screen = 'gamerv';
+    state.rvIndex = 0; state.rvTotal = 10; state.rvScore = 0; state.rvFinished = false;
+    App.buildRVRound();
+    App.render();
+  },
+  buildRVRound: function () {
+    var db = App.db();
+    var embaralhado = App.embaralhar(db);
+    var alvo = embaralhado[0];
+    var opcoes = App.embaralhar([alvo].concat(embaralhado.slice(1, 4)));
+    state.rvCurrent = { alvoId: alvo.id, foto: alvo.abas.entidade.foto, opcoes: opcoes };
+    state.rvFeedback = ''; state.rvFeedbackOk = null;
+    App.render();
+    App.startTimer(15, function () { App.answerRV(''); });
+  },
+  answerRV: function (guessId) {
+    if (!state.rvCurrent || state.rvFeedback) return;
+    App.stopTimer();
+    var acertou = guessId === state.rvCurrent.alvoId;
+    var nomeAlvo = state.rvCurrent.opcoes.filter(function (o) { return o.id === state.rvCurrent.alvoId; })[0];
+    state.rvCurrent.guessId = guessId;
+    if (acertou) { state.rvScore++; state.rvFeedback = '✔ Correto! Era ' + (nomeAlvo ? nomeAlvo.nome : '') + '.'; state.rvFeedbackOk = true; }
+    else { state.rvFeedback = '✘ Errado — era ' + (nomeAlvo ? nomeAlvo.nome : '') + '.'; state.rvFeedbackOk = false; }
+    App.render();
+    setTimeout(function () { App.nextRV(); }, 1400);
+  },
+  nextRV: function () {
+    var next = state.rvIndex + 1;
+    if (next >= state.rvTotal) { state.rvFinished = true; App.addXP(state.rvScore * 8); App.render(); }
+    else { state.rvIndex = next; App.buildRVRound(); }
+  },
+  exitGameRV: function () {
+    if (!window.confirm('Sair agora vai encerrar o reconhecimento visual. Sair mesmo assim?')) return;
+    App.stopTimer();
     state.screen = 'activities'; App.render();
   },
 
@@ -750,6 +997,7 @@ var App = {
       if (el) el.textContent = state.clock;
     }, 1000);
     state.clock = new Date().toLocaleString('pt-BR');
+    App.loadTimedMode();
     if ('speechSynthesis' in window) {
       App.ptVoice = App.pickPtVoice();
       window.speechSynthesis.onvoiceschanged = function () { App.ptVoice = App.pickPtVoice(); };
@@ -860,8 +1108,9 @@ function renderBoot() {
 function renderChrome() {
   var isMap = state.screen === 'map', isFiles = state.screen === 'files', isDossier = state.screen === 'dossier',
       isActivities = state.screen === 'activities', isGame = state.screen === 'game',
-      isGameVF = state.screen === 'gamevf', isGameAssocie = state.screen === 'gameassocie';
-  var isAnyGame = isGame || isGameVF || isGameAssocie;
+      isGameVF = state.screen === 'gamevf', isGameAssocie = state.screen === 'gameassocie',
+      isGameDet = state.screen === 'gamedet', isGameRV = state.screen === 'gamerv';
+  var isAnyGame = isGame || isGameVF || isGameAssocie || isGameDet || isGameRV;
 
   var navItems = [
     { key: 'mapa', label: 'MAPA INICIAL', active: isMap, fn: 'App.goToMap()' },
@@ -880,6 +1129,8 @@ function renderChrome() {
   else if (isGame) content = renderGame();
   else if (isGameVF) content = renderGameVF();
   else if (isGameAssocie) content = renderGameAssocie();
+  else if (isGameDet) content = renderGameDetetive();
+  else if (isGameRV) content = renderGameRV();
 
   var tapeTop = '⚠ CENA DE INVESTIGAÇÃO — NÃO ULTRAPASSE ⚠ ACESSO RESTRITO — NÍVEL 4 ⚠ CENA DE INVESTIGAÇÃO — NÃO ULTRAPASSE ⚠ ACESSO RESTRITO — NÍVEL 4 ⚠&nbsp;';
   var tapeBottom = '⚠ S.I.I.F — DIVISÃO DE OCORRÊNCIAS PARANORMAIS E CULTURAIS ⚠ ARQUIVO CONFIDENCIAL ⚠ S.I.I.F — DIVISÃO DE OCORRÊNCIAS PARANORMAIS E CULTURAIS ⚠ ARQUIVO CONFIDENCIAL ⚠&nbsp;';
@@ -1078,25 +1329,57 @@ function renderDossier() {
     '</div>';
 }
 
+function renderRankPanel() {
+  var rank = App.getRank();
+  var atual = RANK_TIERS[rank.index];
+  var proxima = rank.proxima;
+  var pct = proxima ? Math.min(100, Math.round(((rank.xp - atual.min) / (proxima.min - atual.min)) * 100)) : 100;
+  var tiersHtml = RANK_TIERS.map(function (t, i) {
+    return '<div class="rank-tier' + (i === rank.index ? ' current' : (i < rank.index ? ' done' : '')) + '">' +
+      '<span class="rank-tier-n">' + (i + 1) + '</span><span class="rank-tier-title">' + App.esc(t.title) + '</span>' +
+      '<span class="rank-tier-min">' + t.min + ' XP</span></div>';
+  }).join('');
+  return '' +
+    '<div class="rank-panel">' +
+    '  <div class="rank-current">' +
+    '    <div class="rank-current-badge">🏅</div>' +
+    '    <div>' +
+    '      <div class="rank-current-title">' + App.esc(atual.title) + '</div>' +
+    '      <div class="rank-current-xp">' + rank.xp + ' XP acumulados' + (proxima ? ' — faltam ' + (proxima.min - rank.xp) + ' XP para ' + App.esc(proxima.title) : ' — patente máxima atingida!') + '</div>' +
+    '      <div class="rank-progress-bar"><div class="rank-progress-fill" style="width:' + pct + '%"></div></div>' +
+    '    </div>' +
+    '  </div>' +
+    '  <div class="rank-ladder">' + tiersHtml + '</div>' +
+    '</div>';
+}
+
 function renderActivities() {
   var db = App.db();
   var countDescubra = db.length;
-  var countDesvende = Math.min(QTD_CASOS_DESVENDE, db.length);
+  var timedOn = state.timedMode;
   return '' +
     '<div class="toolbar"><button class="btn" onclick="App.goToMap()">« VOLTAR AO MAPA</button></div>' +
     '<div class="lupa-watermark"></div><div class="lupa-handle"></div>' +
     '<h2 style="color:#d9a441;font-family:\'Special Elite\',monospace;text-align:center;">SALA DE DESCANSO DO INVESTIGADOR</h2>' +
     '<p class="landing-intro">Turno da madrugada. A máquina de café quebrou.<br>Revise os arquivos em aberto e cruze os depoimentos antes que os casos esfriem.</p>' +
+    renderRankPanel() +
+    '<div class="timed-toggle-row">' +
+    '  <label class="timed-toggle">' +
+    '    <input type="checkbox" ' + (timedOn ? 'checked' : '') + ' onchange="App.toggleTimedMode()">' +
+    '    <span class="timed-toggle-slider"></span>' +
+    '  </label>' +
+    '  <span>Modo Cronometrado ' + (timedOn ? '(ATIVADO — as rodadas têm tempo limite)' : '(desativado — jogue sem pressa)') + '</span>' +
+    '</div>' +
     '<div class="activity-cards">' +
     '  <div class="activity-card" onclick="App.iniciarJogo(\'descubra\')">' +
     '    <h3>DESCUBRA A LENDA</h3>' +
     '    <p>Você recebe o depoimento de uma testemunha e pode consultar o Boletim de Ocorrência. Sem abrir os arquivos: adivinhe qual lenda é.</p>' +
     '    <span class="activity-count">' + countDescubra + ' CASOS</span>' +
     '  </div>' +
-    '  <div class="activity-card" onclick="App.iniciarJogo(\'desvende\')">' +
-    '    <h3>DESVENDE O MISTÉRIO</h3>' +
-    '    <p>Modo avançado: pistas parciais — trechos de depoimento e imagens reveladas aos poucos. Junte tudo e aponte o culpado antes que o sinal toque.</p>' +
-    '    <span class="activity-count">' + countDesvende + ' CASOS</span>' +
+    '  <div class="activity-card" onclick="App.iniciarJogoDetetive()">' +
+    '    <h3>DETETIVE DE ELIMINAÇÃO</h3>' +
+    '    <p>Um novo suspeito surge a cada rodada: 6 lendas na sala, só uma é a culpada. Elimine suspeitos com as pistas reveladas e aponte o verdadeiro culpado antes do tempo acabar.</p>' +
+    '    <span class="activity-count">6 RODADAS</span>' +
     '  </div>' +
     '  <div class="activity-card" onclick="App.iniciarJogoVF()">' +
     '    <h3>TESTE DE CAMPO</h3>' +
@@ -1108,12 +1391,22 @@ function renderActivities() {
     '    <p>Você recebe 4 lendas embaralhadas e precisa associar cada uma à sua região correta no mapa antes que a rodada expire.</p>' +
     '    <span class="activity-count">' + Math.ceil(db.length / 4) + ' RODADAS</span>' +
     '  </div>' +
+    '  <div class="activity-card" onclick="App.iniciarJogoRV()">' +
+    '    <h3>RECONHECIMENTO VISUAL</h3>' +
+    '    <p>O retrato forense de uma lenda aparece na tela. Reconheça o rosto e escolha o nome certo entre as opções antes do tempo esgotar.</p>' +
+    '    <span class="activity-count">10 RODADAS</span>' +
+    '  </div>' +
     '</div>';
+}
+
+function renderTimerBar() {
+  if (!state.timedMode) return '';
+  return '<div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div><div class="timer-value" id="timer-value">' + state.timeTotal + 's</div></div>';
 }
 
 function renderGame() {
   var caso = App.currentGameCase();
-  var title = state.gameType === 'descubra' ? 'DESCUBRA A LENDA' : 'DESVENDE O MISTÉRIO';
+  var title = 'DESCUBRA A LENDA';
   var progressText = 'Caso ' + (state.gameIndex + 1) + ' de ' + state.gameCaseIds.length + ' — Pontuação: ' + state.gamePoints;
 
   var exitBtn = '<div class="toolbar"><button class="btn" onclick="App.exitGame()">« ABANDONAR INVESTIGAÇÃO</button></div>';
@@ -1130,28 +1423,14 @@ function renderGame() {
 
   if (!caso) return exitBtn + '<p>Carregando rodada...</p>';
 
-  var clueBlock = '', cluesBlock = '', showBOButton = false, showNextClueButton = false;
-
-  if (state.gameType === 'descubra') {
-    var dep = App.removerTags(caso.abas.testemunha.blocos.map(function (b) { return b.texto; }).join(' '));
-    var bo = App.removerTags(caso.abas.desaparecido.blocos.map(function (b) { return b.texto; }).join(' '));
-    var clueLabel = state.gameShowedBO ? 'Depoimento da testemunha + Boletim de Ocorrência' : 'Depoimento da testemunha';
-    var clueText = state.gameShowedBO ? (dep + '\n\n— B.O. —\n' + bo) : dep;
-    showBOButton = !state.gameShowedBO;
-    clueBlock = '<div class="game-clue-label">' + App.esc(clueLabel) + '</div><div class="game-clue-text">' + App.esc(clueText) + '</div>';
-  } else {
-    var visibleClues = state.gameClues.slice(0, state.gameClueIndex);
-    showNextClueButton = state.gameClueIndex < state.gameClues.length;
-    cluesBlock = '<div style="margin-bottom:18px;">' + visibleClues.map(function (c) {
-      if (c.tipo === 'texto') {
-        return '<div class="clue-block"><div class="game-clue-label">' + App.esc(c.label) + '</div>' +
-          '<div class="game-clue-text">"' + App.esc(c.conteudo) + '"</div></div>';
-      } else {
-        return '<div class="clue-block"><div class="game-clue-label">' + App.esc(c.label) + '</div>' +
-          '<div class="clue-img-wrap' + (c.blur ? ' blur' : '') + '">' + renderSlot(c.slotId, 'Retrato / evidência forense', c.blur, (caso.abas.entidade && caso.abas.entidade.foto) || null) + '</div></div>';
-      }
-    }).join('') + '</div>';
-  }
+  var dep = App.removerTags(caso.abas.testemunha.blocos.map(function (b) { return b.texto; }).join(' '));
+  var bo = App.removerTags(caso.abas.desaparecido.blocos.map(function (b) { return b.texto; }).join(' '));
+  var clueLabel = state.gameShowedBO ? 'Depoimento da testemunha + Boletim de Ocorrência' : 'Depoimento da testemunha';
+  var clueText = state.gameShowedBO ? (dep + '\n\n— B.O. —\n' + bo) : dep;
+  var showBOButton = !state.gameShowedBO;
+  var showNextClueButton = false;
+  var clueBlock = '<div class="game-clue-label">' + App.esc(clueLabel) + '</div><div class="game-clue-text">' + App.esc(clueText) + '</div>';
+  var cluesBlock = '';
 
   var optionsHtml = '<option value="">— selecione a lenda —</option>' + state.gameOptions.map(function (o) {
     return '<option value="' + o.id + '"' + (state.gameGuessId === o.id ? ' selected' : '') + '>' + App.esc(o.nome) + '</option>';
@@ -1161,6 +1440,7 @@ function renderGame() {
 
   return exitBtn +
     '<div class="game-progress">' + progressText + '</div>' +
+    renderTimerBar() +
     '<div class="game-board">' +
     '  <div class="game-header"><h2>' + title + '</h2></div>' +
     '  <div class="game-warning">⚠ Não saia desta tela para consultar o arquivo físico: o progresso desta investigação será perdido.</div>' +
@@ -1194,6 +1474,7 @@ function renderGameVF() {
   var answered = state.vfFeedback !== '';
   return exitBtn +
     '<div class="game-progress">Rodada ' + (state.vfIndex + 1) + ' de ' + state.vfTotal + ' — Acertos: ' + state.vfScore + '</div>' +
+    renderTimerBar() +
     '<div class="game-board">' +
     '  <div class="game-header"><h2>TESTE DE CAMPO</h2></div>' +
     '  <div class="game-clue-label">AFIRMAÇÃO SOB ANÁLISE</div>' +
@@ -1229,12 +1510,92 @@ function renderGameAssocie() {
   }).join('');
   return exitBtn +
     '<div class="game-progress">Rodada ' + (state.amIndex + 1) + ' de ' + state.amRounds.length + ' — Pontos: ' + state.amScore + '</div>' +
+    renderTimerBar() +
     '<div class="game-board">' +
     '  <div class="game-header"><h2>MAPEAMENTO DE CAMPO</h2></div>' +
     '  <div class="game-warning" style="background:rgba(0,0,0,.3);border-color:#444;color:#ccc;">Associe cada lenda abaixo à região do Brasil onde o caso está catalogado.</div>' +
     linhas +
     '  <div class="game-actions"><button class="btn" onclick="App.checkAssocie()">CONFIRMAR ASSOCIAÇÕES</button></div>' +
     '  <div class="game-feedback">' + App.esc(state.amFeedback) + '</div>' +
+    '</div>';
+}
+
+function renderGameDetetive() {
+  var exitBtn = '<div class="toolbar"><button class="btn" onclick="App.exitGameDetetive()">« ABANDONAR INVESTIGAÇÃO</button></div>';
+  if (state.detFinished) {
+    return exitBtn +
+      '<div class="game-summary">' +
+      '  <h2>INVESTIGAÇÃO ENCERRADA</h2>' +
+      '  <p>Você reuniu ' + state.detScore + ' pontos ao longo de ' + state.detTotal + ' casos de eliminação.</p>' +
+      '  <p class="score">Pontuação final: ' + state.detScore + (state.lastXpGain ? ' · +' + state.lastXpGain + ' XP' : '') + '</p>' +
+      '  <button class="btn" style="margin-top:14px;" onclick="App.goToActivities()">VOLTAR ÀS ATIVIDADES</button>' +
+      '</div>';
+  }
+  var pistasHtml = state.detPistas.slice(0, state.detPistaIndex).map(function (p, i) {
+    return '<div class="clue-block"><div class="game-clue-label">PISTA ' + (i + 1) + '</div><div class="game-clue-text">' + App.esc(p) + '</div></div>';
+  }).join('');
+  var showNextClueButton = state.detPistaIndex < state.detPistas.length && !state.detRoundOver;
+  var suspeitosHtml = state.detSuspects.map(function (s) {
+    var eliminado = !!state.detEliminados[s.id];
+    var cls = 'suspect-card' + (eliminado ? ' eliminated' : '') + (state.detRoundOver && s.id === state.detTargetId ? ' revealed-target' : '');
+    return '' +
+      '<div class="' + cls + '">' +
+      '  <div class="suspect-name">' + App.esc(s.nome) + '</div>' +
+      '  <div class="suspect-region">' + App.esc(s.regiao) + '</div>' +
+      '  <div class="suspect-actions">' +
+      '    <button class="btn btn-sm" ' + (state.detRoundOver ? 'disabled' : '') + ' onclick="App.toggleEliminarSuspeito(\'' + s.id + '\')">' + (eliminado ? 'REINCLUIR' : 'ELIMINAR') + '</button>' +
+      '    <button class="btn btn-sm btn-accuse" ' + (state.detRoundOver || eliminado ? 'disabled' : '') + ' onclick="App.confirmarSuspeitoFinal(\'' + s.id + '\')">ACUSAR</button>' +
+      '  </div>' +
+      '</div>';
+  }).join('');
+  var feedbackClass = state.detFeedbackOk === true ? ' ok' : state.detFeedbackOk === false ? ' fail' : '';
+  return exitBtn +
+    '<div class="game-progress">Caso ' + (state.detIndex + 1) + ' de ' + state.detTotal + ' — Pontuação: ' + state.detScore + '</div>' +
+    renderTimerBar() +
+    '<div class="game-board">' +
+    '  <div class="game-header"><h2>DETETIVE DE ELIMINAÇÃO</h2></div>' +
+    '  <div class="game-warning">⚠ Um dos 6 suspeitos abaixo é o verdadeiro culpado deste caso. Use as pistas, elimine quem não bate e acuse o certo antes do tempo acabar.</div>' +
+    pistasHtml +
+    (showNextClueButton ? '<div class="game-actions"><button class="btn" onclick="App.avancarPistaDet(false)">PEDIR PRÓXIMA PISTA</button></div>' : '') +
+    '  <div class="suspect-grid">' + suspeitosHtml + '</div>' +
+    '  <div class="game-feedback' + feedbackClass + '">' + App.esc(state.detFeedback) + '</div>' +
+    '</div>';
+}
+
+function renderGameRV() {
+  var exitBtn = '<div class="toolbar"><button class="btn" onclick="App.exitGameRV()">« ABANDONAR RECONHECIMENTO</button></div>';
+  if (state.rvFinished) {
+    return exitBtn +
+      '<div class="game-summary">' +
+      '  <h2>RECONHECIMENTO VISUAL ENCERRADO</h2>' +
+      '  <p>Você reconheceu corretamente ' + state.rvScore + ' de ' + state.rvTotal + ' rostos.</p>' +
+      '  <p class="score">Aproveitamento: ' + Math.round((state.rvScore / state.rvTotal) * 100) + '%' + (state.lastXpGain ? ' · +' + state.lastXpGain + ' XP' : '') + '</p>' +
+      '  <button class="btn" style="margin-top:14px;" onclick="App.goToActivities()">VOLTAR ÀS ATIVIDADES</button>' +
+      '</div>';
+  }
+  var c = state.rvCurrent;
+  if (!c) return exitBtn + '<p>Carregando rodada...</p>';
+  var answered = state.rvFeedback !== '';
+  var optionsHtml = c.opcoes.map(function (o) {
+    var isGuess = c.guessId === o.id;
+    var isTarget = o.id === c.alvoId;
+    var cls = 'rv-option';
+    if (answered) {
+      if (isTarget) cls += ' correct';
+      else if (isGuess) cls += ' wrong';
+    }
+    return '<button class="' + cls + '" ' + (answered ? 'disabled' : '') + ' onclick="App.answerRV(\'' + o.id + '\')">' + App.esc(o.nome) + '</button>';
+  }).join('');
+  var feedbackClass = state.rvFeedbackOk === true ? ' ok' : state.rvFeedbackOk === false ? ' fail' : '';
+  return exitBtn +
+    '<div class="game-progress">Rodada ' + (state.rvIndex + 1) + ' de ' + state.rvTotal + ' — Acertos: ' + state.rvScore + '</div>' +
+    renderTimerBar() +
+    '<div class="game-board">' +
+    '  <div class="game-header"><h2>RECONHECIMENTO VISUAL</h2></div>' +
+    '  <div class="game-warning" style="background:rgba(0,0,0,.3);border-color:#444;color:#ccc;">Observe o retrato forense abaixo e identifique a lenda correta.</div>' +
+    '  <div class="rv-photo-frame"><img src="' + App.esc(c.foto || '') + '" alt="Retrato forense" onerror="this.parentNode.classList.add(\'slot-broken\')"></div>' +
+    '  <div class="rv-options">' + optionsHtml + '</div>' +
+    '  <div class="game-feedback' + feedbackClass + '">' + App.esc(state.rvFeedback) + '</div>' +
     '</div>';
 }
 
