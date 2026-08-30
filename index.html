@@ -255,6 +255,9 @@ p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px
 .rank-tier.current{border-color:var(--amber);background:rgba(217,164,65,.08);}
 .rank-tier.current .rank-tier-title{color:var(--amber);font-weight:bold;}
 .rank-tier.current .rank-tier-n{color:var(--amber);}
+.rank-reset-row{text-align:center;margin-top:14px;}
+.rank-reset-link{color:#555;font-size:.7em;letter-spacing:.5px;cursor:pointer;text-decoration:underline;transition:.15s;}
+.rank-reset-link:hover{color:var(--blood-red-bright);}
 
 /* ===== Detetive de Eliminação ===== */
 .suspect-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:18px 0;}
@@ -587,6 +590,17 @@ var App = {
     players[name] = (players[name] || 0) + state.pendingPoints;
     App.savePlayers(players);
     state.pendingPoints = 0;
+    App.render();
+  },
+  resetRanking: function () {
+    if (!window.confirm('Isso vai apagar a pontuação de TODOS os investigadores salva neste dispositivo (ideal para começar uma turma nova ou depois de um teste). Confirmar?')) return;
+    try { localStorage.removeItem('siif_players'); } catch (e) {}
+    try { localStorage.removeItem('siif_current_player'); } catch (e) {}
+    state.playerName = '';
+    state.playerNameInput = '';
+    state.switchingPlayer = false;
+    state.pendingPoints = 0;
+    state.lastPointsGain = 0;
     App.render();
   },
   getRank: function (points) {
@@ -1479,12 +1493,15 @@ function renderRankPanel() {
       '<span class="rank-tier-min">' + t.min + ' pts</span></div>';
   }).join('');
 
+  var resetHtml = names.length ? '<div class="rank-reset-row"><span class="rank-reset-link" onclick="App.resetRanking()">Zerar ranking da turma (professor)</span></div>' : '';
+
   return '' +
     '<div class="rank-panel">' +
     currentBlock +
     renderPlayerSwitcher() +
     leaderboardHtml +
     '  <div class="rank-ladder">' + tiersHtml + '</div>' +
+    resetHtml +
     '</div>';
 }
 
