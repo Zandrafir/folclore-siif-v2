@@ -218,6 +218,25 @@ p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px
 .timed-toggle input:checked + .timed-toggle-slider{background:rgba(127,191,106,.35);border-color:#7fbf6a;}
 .timed-toggle input:checked + .timed-toggle-slider::before{transform:translateX(21px);background:#7fbf6a;}
 
+/* ===== Ranking multiplayer: troca de jogador / placar da turma ===== */
+.player-name-input{background:#111;border:1px solid #444;color:#fff;padding:10px 12px;font-family:inherit;font-size:.9em;min-width:220px;}
+.player-name-input:focus{outline:none;border-color:var(--amber);}
+.player-switcher{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+.leaderboard{margin-bottom:18px;border:1px solid #2a2a2a;background:#0d0d0d;}
+.leaderboard-label{font-size:.72em;color:var(--blood-red-bright);text-transform:uppercase;letter-spacing:2px;padding:10px 12px;border-bottom:1px solid #2a2a2a;}
+.leaderboard-row{display:grid;grid-template-columns:40px 1fr auto auto;gap:10px;align-items:center;padding:8px 12px;font-size:.82em;color:#bbb;border-bottom:1px solid #1a1a1a;}
+.leaderboard-row:last-child{border-bottom:none;}
+.leaderboard-row.me{background:rgba(217,164,65,.1);color:var(--amber);}
+.leaderboard-pos{color:#666;font-family:'Courier Prime',monospace;}
+.leaderboard-row.me .leaderboard-pos{color:var(--amber);}
+.leaderboard-name{font-family:'Special Elite',monospace;}
+.leaderboard-rank{color:#888;font-size:.85em;}
+.leaderboard-row.me .leaderboard-rank{color:#d9c090;}
+.leaderboard-pts{color:#7fbf6a;font-weight:bold;white-space:nowrap;}
+.points-claim{background:rgba(217,164,65,.08);border:1px solid var(--amber);padding:16px;margin:14px 0;text-align:center;}
+.points-claim p{margin:0 0 10px;color:#e6c88a;font-size:.9em;}
+.points-claim .player-name-input{margin-right:8px;}
+
 /* ===== Painel de Ranking (Patentes S.I.I.F) ===== */
 .rank-panel{max-width:900px;margin:0 auto 24px;background:var(--panel);border:1px solid #333;padding:20px 22px;position:relative;z-index:1;}
 .rank-current{display:flex;align-items:center;gap:16px;margin-bottom:16px;}
@@ -380,18 +399,19 @@ const folcloreDB = [
 
 var SENHA_ACESSO = 'Ephim';
 
-/* Patentes do S.I.I.F — ranking local (localStorage), do menor ao maior XP acumulado. */
+/* Patentes do S.I.I.F — ranking local (localStorage), por jogador, a cada 10 pontos sobe uma patente. */
+var PONTOS_POR_PATENTE = 10;
 var RANK_TIERS = [
-  { title: 'Investigador por Hobby', min: 0 },
-  { title: 'Auxiliar de Campo', min: 80 },
-  { title: 'Agente Júnior', min: 200 },
-  { title: 'Agente de Campo', min: 380 },
-  { title: 'Investigador Associado', min: 600 },
-  { title: 'Investigador Sênior', min: 870 },
-  { title: 'Detetive Nível Bronze', min: 1200 },
-  { title: 'Detetive Nível Prata', min: 1600 },
-  { title: 'Detetive Nível Ouro', min: 2100 },
-  { title: 'Detetive Nível Diamante', min: 2700 },
+  { title: 'Investigador por Hobby', min: 0 * PONTOS_POR_PATENTE },
+  { title: 'Auxiliar de Campo', min: 1 * PONTOS_POR_PATENTE },
+  { title: 'Agente Júnior', min: 2 * PONTOS_POR_PATENTE },
+  { title: 'Agente de Campo', min: 3 * PONTOS_POR_PATENTE },
+  { title: 'Investigador Associado', min: 4 * PONTOS_POR_PATENTE },
+  { title: 'Investigador Sênior', min: 5 * PONTOS_POR_PATENTE },
+  { title: 'Detetive Nível Bronze', min: 6 * PONTOS_POR_PATENTE },
+  { title: 'Detetive Nível Prata', min: 7 * PONTOS_POR_PATENTE },
+  { title: 'Detetive Nível Ouro', min: 8 * PONTOS_POR_PATENTE },
+  { title: 'Detetive Nível Diamante', min: 9 * PONTOS_POR_PATENTE },
 ];
 
 var state = {
@@ -423,8 +443,14 @@ var state = {
   /* Modo cronometrado (global) */
   timedMode: false, timeLeft: 0, timeTotal: 0,
 
-  /* XP recém-ganho (exibido no resumo final de cada atividade) */
-  lastXpGain: 0,
+  /* Ranking multiplayer — jogador ativo (localStorage) */
+  playerName: '',
+  playerNameInput: '',
+  switchingPlayer: false,
+
+  /* Pontos ganhos na atividade recém-concluída (exibidos no resumo final); se não houver jogador definido, ficam pendentes até o nome ser informado */
+  lastPointsGain: 0,
+  pendingPoints: 0,
 };
 
 var App = {
@@ -495,26 +521,80 @@ var App = {
     if (ov) ov.classList.remove('open');
   },
 
-  /* ---------- Ranking / XP (persistido em localStorage) ---------- */
-  getXP: function () {
-    try { return parseInt(localStorage.getItem('siif_xp'), 10) || 0; } catch (e) { return 0; }
+  /* ---------- Ranking multiplayer (persistido em localStorage) ---------- */
+  getPlayers: function () {
+    try {
+      var raw = localStorage.getItem('siif_players');
+      var obj = raw ? JSON.parse(raw) : {};
+      return (obj && typeof obj === 'object') ? obj : {};
+    } catch (e) { return {}; }
   },
-  addXP: function (n) {
+  savePlayers: function (players) {
+    try { localStorage.setItem('siif_players', JSON.stringify(players)); } catch (e) {}
+  },
+  loadPlayerName: function () {
+    try { state.playerName = localStorage.getItem('siif_current_player') || ''; } catch (e) { state.playerName = ''; }
+  },
+  setPlayerName: function (name) {
+    name = (name || '').trim();
+    if (!name) return;
+    var players = App.getPlayers();
+    if (!(name in players)) players[name] = 0;
+    App.savePlayers(players);
+    state.playerName = name;
+    state.switchingPlayer = false;
+    state.playerNameInput = '';
+    try { localStorage.setItem('siif_current_player', name); } catch (e) {}
+    App.render();
+  },
+  startSwitchPlayer: function () {
+    state.switchingPlayer = true;
+    state.playerNameInput = state.playerName || '';
+    App.render();
+  },
+  cancelSwitchPlayer: function () {
+    state.switchingPlayer = false;
+    App.render();
+  },
+  onPlayerNameInput: function (v) { state.playerNameInput = v; },
+  confirmSwitchPlayer: function () { App.setPlayerName(state.playerNameInput); },
+  getPoints: function (name) {
+    name = name || state.playerName;
+    if (!name) return 0;
+    var players = App.getPlayers();
+    return players[name] || 0;
+  },
+  addPoints: function (n) {
     if (!n) return 0;
-    var total = App.getXP() + n;
-    try { localStorage.setItem('siif_xp', String(total)); } catch (e) {}
-    state.lastXpGain = n;
-    return total;
+    state.lastPointsGain = n;
+    if (!state.playerName) {
+      state.pendingPoints = (state.pendingPoints || 0) + n;
+      return 0;
+    }
+    var players = App.getPlayers();
+    players[state.playerName] = (players[state.playerName] || 0) + n;
+    App.savePlayers(players);
+    return players[state.playerName];
   },
-  getRank: function (xp) {
-    if (xp === undefined) xp = App.getXP();
+  claimPendingPoints: function (name) {
+    name = (name || '').trim();
+    if (!name || !state.pendingPoints) return;
+    App.setPlayerName(name);
+    var players = App.getPlayers();
+    players[name] = (players[name] || 0) + state.pendingPoints;
+    App.savePlayers(players);
+    state.pendingPoints = 0;
+    App.render();
+  },
+  getRank: function (points) {
+    if (points === undefined) points = App.getPoints();
     var atual = RANK_TIERS[0];
     var proxima = null;
     for (var i = 0; i < RANK_TIERS.length; i++) {
-      if (xp >= RANK_TIERS[i].min) atual = RANK_TIERS[i];
+      if (points >= RANK_TIERS[i].min) atual = RANK_TIERS[i];
       else { proxima = RANK_TIERS[i]; break; }
     }
-    return { title: atual.title, index: RANK_TIERS.indexOf(atual), xp: xp, proxima: proxima };
+    return { title: atual.title, index: RANK_TIERS.indexOf(atual), points: points, proxima: proxima };
   },
 
   /* ---------- Modo Cronometrado ---------- */
@@ -750,7 +830,7 @@ var App = {
     var next = state.gameIndex + 1;
     if (next >= state.gameCaseIds.length) {
       state.gameFinished = true;
-      App.addXP(state.gameCorrect * 5);
+      App.addPoints(state.gameCorrect);
       App.render();
     }
     else { state.gameIndex = next; App.render(); setTimeout(function () { App.startRound(); }, 0); }
@@ -814,7 +894,7 @@ var App = {
   },
   nextVF: function () {
     var next = state.vfIndex + 1;
-    if (next >= state.vfTotal) { state.vfFinished = true; App.addXP(state.vfScore * 8); App.render(); }
+    if (next >= state.vfTotal) { state.vfFinished = true; App.addPoints(state.vfScore); App.render(); }
     else {
       state.vfIndex = next; App.buildVFStatement(); App.render();
       App.startTimer(15, function () { App.answerVF(!state.vfCurrent.isTrue); });
@@ -867,7 +947,7 @@ var App = {
   },
   nextAssocie: function () {
     var next = state.amIndex + 1;
-    if (next >= state.amRounds.length) { state.amFinished = true; App.addXP(state.amScore * 4); App.render(); }
+    if (next >= state.amRounds.length) { state.amFinished = true; App.addPoints(state.amScore); App.render(); }
     else { state.amIndex = next; App.startAssocieRound(); App.render(); }
   },
   exitGameAssocie: function () {
@@ -879,7 +959,7 @@ var App = {
   /* ---------- Detetive de Eliminação ---------- */
   iniciarJogoDetetive: function () {
     state.screen = 'gamedet';
-    state.detIndex = 0; state.detTotal = 6; state.detScore = 0; state.detFinished = false;
+    state.detIndex = 0; state.detTotal = 6; state.detScore = 0; state.detAcertos = 0; state.detFinished = false;
     App.startDetetiveRound();
     App.render();
   },
@@ -928,6 +1008,7 @@ var App = {
     if (acertou) {
       pontos = Math.max(30 - (state.detPistaIndex - 1) * 10, 10);
       state.detScore += pontos;
+      state.detAcertos++;
     }
     var alvo = null;
     for (var i = 0; i < state.detSuspects.length; i++) if (state.detSuspects[i].id === state.detTargetId) alvo = state.detSuspects[i];
@@ -940,7 +1021,7 @@ var App = {
   },
   nextDetetive: function () {
     var next = state.detIndex + 1;
-    if (next >= state.detTotal) { state.detFinished = true; App.addXP(state.detScore); App.render(); }
+    if (next >= state.detTotal) { state.detFinished = true; App.addPoints(state.detAcertos); App.render(); }
     else { state.detIndex = next; App.startDetetiveRound(); }
   },
   exitGameDetetive: function () {
@@ -979,7 +1060,7 @@ var App = {
   },
   nextRV: function () {
     var next = state.rvIndex + 1;
-    if (next >= state.rvTotal) { state.rvFinished = true; App.addXP(state.rvScore * 8); App.render(); }
+    if (next >= state.rvTotal) { state.rvFinished = true; App.addPoints(state.rvScore); App.render(); }
     else { state.rvIndex = next; App.buildRVRound(); }
   },
   exitGameRV: function () {
@@ -998,6 +1079,7 @@ var App = {
     }, 1000);
     state.clock = new Date().toLocaleString('pt-BR');
     App.loadTimedMode();
+    App.loadPlayerName();
     if ('speechSynthesis' in window) {
       App.ptVoice = App.pickPtVoice();
       window.speechSynthesis.onvoiceschanged = function () { App.ptVoice = App.pickPtVoice(); };
@@ -1329,26 +1411,76 @@ function renderDossier() {
     '</div>';
 }
 
+function renderPlayerSwitcher() {
+  if (state.switchingPlayer) {
+    return '' +
+      '<div class="player-switcher">' +
+      '  <input type="text" class="player-name-input" placeholder="Nome do investigador" maxlength="24" value="' + App.esc(state.playerNameInput) + '" ' +
+      '    oninput="App.onPlayerNameInput(this.value)" onkeydown="if(event.key===\'Enter\')App.confirmSwitchPlayer()">' +
+      '  <button class="btn btn-sm" onclick="App.confirmSwitchPlayer()">CONFIRMAR</button>' +
+      (state.playerName ? '  <button class="btn btn-sm" onclick="App.cancelSwitchPlayer()">CANCELAR</button>' : '') +
+      '</div>';
+  }
+  if (!state.playerName) {
+    return '' +
+      '<div class="player-switcher">' +
+      '  <input type="text" class="player-name-input" placeholder="Digite seu nome para entrar no ranking" maxlength="24" value="' + App.esc(state.playerNameInput) + '" ' +
+      '    oninput="App.onPlayerNameInput(this.value)" onkeydown="if(event.key===\'Enter\')App.confirmSwitchPlayer()">' +
+      '  <button class="btn btn-sm" onclick="App.confirmSwitchPlayer()">ENTRAR NO RANKING</button>' +
+      '</div>';
+  }
+  return '<button class="btn btn-sm" onclick="App.startSwitchPlayer()">TROCAR DE INVESTIGADOR</button>';
+}
+
 function renderRankPanel() {
+  var players = App.getPlayers();
+  var names = Object.keys(players);
   var rank = App.getRank();
   var atual = RANK_TIERS[rank.index];
   var proxima = rank.proxima;
-  var pct = proxima ? Math.min(100, Math.round(((rank.xp - atual.min) / (proxima.min - atual.min)) * 100)) : 100;
+  var pct = proxima ? Math.min(100, Math.round(((rank.points - atual.min) / (proxima.min - atual.min)) * 100)) : 100;
+
+  var currentBlock = '';
+  if (state.playerName) {
+    currentBlock = '' +
+      '<div class="rank-current">' +
+      '  <div class="rank-current-badge">🏅</div>' +
+      '  <div>' +
+      '    <div class="rank-current-title">' + App.esc(state.playerName) + ' — ' + App.esc(atual.title) + '</div>' +
+      '    <div class="rank-current-xp">' + rank.points + ' pontos' + (proxima ? ' — faltam ' + (proxima.min - rank.points) + ' para ' + App.esc(proxima.title) : ' — patente máxima atingida!') + '</div>' +
+      '    <div class="rank-progress-bar"><div class="rank-progress-fill" style="width:' + pct + '%"></div></div>' +
+      '  </div>' +
+      '</div>';
+  } else {
+    currentBlock = '<p style="color:var(--text-muted);font-size:.85em;margin:0 0 12px;">Informe seu nome para entrar no ranking da turma e guardar seus pontos.</p>';
+  }
+
+  var leaderboardHtml = '';
+  if (names.length) {
+    var sorted = names.slice().sort(function (a, b) { return players[b] - players[a]; });
+    var rowsHtml = sorted.map(function (n, i) {
+      var r = App.getRank(players[n]);
+      return '<div class="leaderboard-row' + (n === state.playerName ? ' me' : '') + '">' +
+        '<span class="leaderboard-pos">' + (i + 1) + 'º</span>' +
+        '<span class="leaderboard-name">' + App.esc(n) + '</span>' +
+        '<span class="leaderboard-rank">' + App.esc(r.title) + '</span>' +
+        '<span class="leaderboard-pts">' + players[n] + ' pts</span>' +
+        '</div>';
+    }).join('');
+    leaderboardHtml = '<div class="leaderboard"><div class="leaderboard-label">Ranking da Turma (' + names.length + ' investigador' + (names.length > 1 ? 'es' : '') + ')</div>' + rowsHtml + '</div>';
+  }
+
   var tiersHtml = RANK_TIERS.map(function (t, i) {
-    return '<div class="rank-tier' + (i === rank.index ? ' current' : (i < rank.index ? ' done' : '')) + '">' +
+    return '<div class="rank-tier' + (state.playerName && i === rank.index ? ' current' : (state.playerName && i < rank.index ? ' done' : '')) + '">' +
       '<span class="rank-tier-n">' + (i + 1) + '</span><span class="rank-tier-title">' + App.esc(t.title) + '</span>' +
-      '<span class="rank-tier-min">' + t.min + ' XP</span></div>';
+      '<span class="rank-tier-min">' + t.min + ' pts</span></div>';
   }).join('');
+
   return '' +
     '<div class="rank-panel">' +
-    '  <div class="rank-current">' +
-    '    <div class="rank-current-badge">🏅</div>' +
-    '    <div>' +
-    '      <div class="rank-current-title">' + App.esc(atual.title) + '</div>' +
-    '      <div class="rank-current-xp">' + rank.xp + ' XP acumulados' + (proxima ? ' — faltam ' + (proxima.min - rank.xp) + ' XP para ' + App.esc(proxima.title) : ' — patente máxima atingida!') + '</div>' +
-    '      <div class="rank-progress-bar"><div class="rank-progress-fill" style="width:' + pct + '%"></div></div>' +
-    '    </div>' +
-    '  </div>' +
+    currentBlock +
+    renderPlayerSwitcher() +
+    leaderboardHtml +
     '  <div class="rank-ladder">' + tiersHtml + '</div>' +
     '</div>';
 }
@@ -1399,6 +1531,22 @@ function renderActivities() {
     '</div>';
 }
 
+function renderPointsGainedLine() {
+  if (state.playerName && state.lastPointsGain) {
+    return '<p class="score">+' + state.lastPointsGain + ' ponto' + (state.lastPointsGain === 1 ? '' : 's') + ' para ' + App.esc(state.playerName) + '!</p>';
+  }
+  if (!state.playerName && state.pendingPoints) {
+    return '' +
+      '<div class="points-claim">' +
+      '  <p>Você fez <strong>' + state.pendingPoints + ' ponto' + (state.pendingPoints === 1 ? '' : 's') + '</strong> nesta atividade! Informe seu nome para entrar no ranking da turma e guardar sua pontuação:</p>' +
+      '  <input type="text" class="player-name-input" placeholder="Seu nome" maxlength="24" value="' + App.esc(state.playerNameInput) + '" ' +
+      '    oninput="App.onPlayerNameInput(this.value)" onkeydown="if(event.key===\'Enter\')App.claimPendingPoints(state.playerNameInput)">' +
+      '  <button class="btn btn-sm" onclick="App.claimPendingPoints(state.playerNameInput)">SALVAR PONTUAÇÃO</button>' +
+      '</div>';
+  }
+  return '';
+}
+
 function renderTimerBar() {
   if (!state.timedMode) return '';
   return '<div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div><div class="timer-value" id="timer-value">' + state.timeTotal + 's</div></div>';
@@ -1417,6 +1565,7 @@ function renderGame() {
       '  <h2>INVESTIGAÇÃO ENCERRADA</h2>' +
       '  <p>Você acertou ' + state.gameCorrect + ' de ' + state.gameCaseIds.length + ' casos.</p>' +
       '  <p class="score">Pontuação final: ' + state.gamePoints + '</p>' +
+      renderPointsGainedLine() +
       '  <button class="btn" style="margin-top:14px;" onclick="App.goToActivities()">VOLTAR ÀS ATIVIDADES</button>' +
       '</div>';
   }
@@ -1466,6 +1615,7 @@ function renderGameVF() {
       '  <h2>TESTE DE CAMPO ENCERRADO</h2>' +
       '  <p>Você acertou ' + state.vfScore + ' de ' + state.vfTotal + ' afirmações.</p>' +
       '  <p class="score">Aproveitamento: ' + Math.round((state.vfScore / state.vfTotal) * 100) + '%</p>' +
+      renderPointsGainedLine() +
       '  <button class="btn" style="margin-top:14px;" onclick="App.goToActivities()">VOLTAR ÀS ATIVIDADES</button>' +
       '</div>';
   }
@@ -1495,6 +1645,7 @@ function renderGameAssocie() {
       '<div class="game-summary">' +
       '  <h2>MAPEAMENTO DE CAMPO ENCERRADO</h2>' +
       '  <p>Você associou corretamente ' + state.amScore + ' de ' + totalPossivel + ' lendas às suas regiões.</p>' +
+      renderPointsGainedLine() +
       '  <button class="btn" style="margin-top:14px;" onclick="App.goToActivities()">VOLTAR ÀS ATIVIDADES</button>' +
       '</div>';
   }
@@ -1527,7 +1678,8 @@ function renderGameDetetive() {
       '<div class="game-summary">' +
       '  <h2>INVESTIGAÇÃO ENCERRADA</h2>' +
       '  <p>Você reuniu ' + state.detScore + ' pontos ao longo de ' + state.detTotal + ' casos de eliminação.</p>' +
-      '  <p class="score">Pontuação final: ' + state.detScore + (state.lastXpGain ? ' · +' + state.lastXpGain + ' XP' : '') + '</p>' +
+      '  <p class="score">Pontuação final: ' + state.detScore + '</p>' +
+      renderPointsGainedLine() +
       '  <button class="btn" style="margin-top:14px;" onclick="App.goToActivities()">VOLTAR ÀS ATIVIDADES</button>' +
       '</div>';
   }
@@ -1569,7 +1721,8 @@ function renderGameRV() {
       '<div class="game-summary">' +
       '  <h2>RECONHECIMENTO VISUAL ENCERRADO</h2>' +
       '  <p>Você reconheceu corretamente ' + state.rvScore + ' de ' + state.rvTotal + ' rostos.</p>' +
-      '  <p class="score">Aproveitamento: ' + Math.round((state.rvScore / state.rvTotal) * 100) + '%' + (state.lastXpGain ? ' · +' + state.lastXpGain + ' XP' : '') + '</p>' +
+      '  <p class="score">Aproveitamento: ' + Math.round((state.rvScore / state.rvTotal) * 100) + '%</p>' +
+      renderPointsGainedLine() +
       '  <button class="btn" style="margin-top:14px;" onclick="App.goToActivities()">VOLTAR ÀS ATIVIDADES</button>' +
       '</div>';
   }
