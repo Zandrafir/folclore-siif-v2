@@ -55,9 +55,14 @@ body{
 #boot-log div{animation:typeIn .25s steps(1) both;}
 
 /* ===== Chrome ===== */
-header.dip-header{background-color:#0d0d0d;color:var(--blood-red-bright);padding:22px 20px 18px;text-align:center;text-transform:uppercase;letter-spacing:3px;box-shadow:0 4px 18px rgba(138,3,3,.35);font-family:'Special Elite',monospace;font-size:1.7em;position:relative;z-index:2;animation:crtFlicker 6s infinite;}
-.badge-wrap{display:inline-flex;align-items:center;justify-content:center;width:110px;height:110px;vertical-align:middle;margin-right:18px;position:relative;top:14px;background:radial-gradient(circle,rgba(217,164,65,.3),transparent 72%);border-radius:50%;}
+header.dip-header{background-color:#0d0d0d;color:var(--blood-red-bright);padding:22px 20px 18px;text-transform:uppercase;letter-spacing:3px;box-shadow:0 4px 18px rgba(138,3,3,.35);font-family:'Special Elite',monospace;font-size:1.7em;position:relative;z-index:2;animation:crtFlicker 6s infinite;}
+/* Layout em flex (badge + bloco de texto lado a lado) — evita que o título, ao quebrar linha em telas
+   estreitas, deslize por baixo/por cima do distintivo (era um bug real em celulares). */
+.header-inner{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;max-width:900px;margin:0 auto;}
+.header-text{text-align:center;max-width:100%;}
+.badge-wrap{display:flex;align-items:center;justify-content:center;width:110px;height:110px;flex:none;background:radial-gradient(circle,rgba(217,164,65,.3),transparent 72%);border-radius:50%;}
 .badge-wrap img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.85));}
+header .header-title{display:block;}
 header .sub{display:block;font-size:.45em;color:var(--text-muted);letter-spacing:4px;margin-top:10px;}
 header .clock{display:block;font-size:.35em;color:#4a7a3f;letter-spacing:1px;margin-top:6px;font-family:'Courier Prime',monospace;}
 
@@ -317,7 +322,8 @@ p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px
 @media (max-width:600px){
   .container{padding:12px;}
   header.dip-header{font-size:1.05em;letter-spacing:1.5px;padding:16px 10px 12px;}
-  .badge-wrap{width:70px;height:70px;top:6px;margin-right:8px;}
+  .header-inner{gap:10px;}
+  .badge-wrap{width:56px;height:56px;}
   .tape-band span{letter-spacing:3px;}
   .topnav{gap:6px;padding:10px;}
   .nav-btn{padding:8px 10px;font-size:.72em;}
@@ -404,6 +410,11 @@ const folcloreDB = [
    ========================================================================= */
 
 var SENHA_ACESSO = 'Ephim';
+
+/* Senha de administrador — protege ações sensíveis (enviar imagem, zerar ranking) num totem
+   compartilhado. Ao contrário da senha de acesso acima, esta NUNCA é exibida em nenhuma tela do
+   site — só quem já sabe o valor consegue usar essas funções. */
+var SENHA_ADMIN = 'Folclore';
 
 /* Patentes do S.I.I.F — ranking local (localStorage), por jogador, a cada 10 pontos sobe uma patente. */
 var PONTOS_POR_PATENTE = 10;
@@ -592,7 +603,15 @@ var App = {
     state.pendingPoints = 0;
     App.render();
   },
+  /* ---------- Acesso de administrador (protege ações sensíveis num totem compartilhado) ---------- */
+  checkAdminSenha: function (motivo) {
+    var pw = window.prompt('Senha de administrador' + (motivo ? ' — ' + motivo : '') + ':');
+    if (pw === null) return false;
+    if (pw !== SENHA_ADMIN) { window.alert('Senha incorreta.'); return false; }
+    return true;
+  },
   resetRanking: function () {
+    if (!App.checkAdminSenha('zerar o ranking da turma')) return;
     if (!window.confirm('Isso vai apagar a pontuação de TODOS os investigadores salva neste dispositivo (ideal para começar uma turma nova ou depois de um teste). Confirmar?')) return;
     try { localStorage.removeItem('siif_players'); } catch (e) {}
     try { localStorage.removeItem('siif_current_player'); } catch (e) {}
@@ -652,6 +671,7 @@ var App = {
     el.parentNode.replaceChild(wrap.firstChild, el);
   },
   triggerSlotInput: function (id) {
+    if (!App.checkAdminSenha('enviar uma imagem')) return;
     var inp = document.getElementById('input-' + id);
     if (inp) inp.click();
   },
@@ -665,6 +685,7 @@ var App = {
     evt.currentTarget.classList.remove('dragover');
     var f = evt.dataTransfer.files && evt.dataTransfer.files[0];
     if (!f || f.type.indexOf('image/') !== 0) return;
+    if (!App.checkAdminSenha('enviar uma imagem')) return;
     this._readFileToSlot(f, id);
   },
   _readFileToSlot: function (file, id) {
@@ -1163,7 +1184,7 @@ function renderSlot(id, placeholder, blurClass, defaultSrc) {
     'ondragover="event.preventDefault();this.classList.add(\'dragover\')" ' +
     'ondragleave="this.classList.remove(\'dragover\')" ' +
     'ondrop="App.handleSlotDrop(event,\'' + id + '\')" ' +
-    'onclick="App.triggerSlotInput(\'' + id + '\')" title="Clique para enviar sua própria imagem para este espaço">' +
+    'onclick="App.triggerSlotInput(\'' + id + '\')" title="Enviar uma imagem para este espaço (requer senha de administrador)">' +
     inner +
     '<input type="file" accept="image/*" id="input-' + id + '" onchange="App.handleSlotFile(event,\'' + id + '\')">' +
     '</div>';
@@ -1236,10 +1257,14 @@ function renderChrome() {
 
   return '' +
     '<header class="dip-header">' +
-    '  <span class="badge-wrap"><img src="' + BADGE_DATAURL + '" alt="Distintivo D.I.P."></span>' +
-    '  Departamento de Investigações Populares' +
-    '  <span class="sub">Divisão de Ocorrências Paranormais &amp; Culturais</span>' +
-    '  <span class="clock" id="clock-el">' + App.esc(state.clock) + '</span>' +
+    '  <div class="header-inner">' +
+    '    <span class="badge-wrap"><img src="' + BADGE_DATAURL + '" alt="Distintivo D.I.P."></span>' +
+    '    <div class="header-text">' +
+    '      <span class="header-title">Departamento de Investigações Populares</span>' +
+    '      <span class="sub">Divisão de Ocorrências Paranormais &amp; Culturais</span>' +
+    '      <span class="clock" id="clock-el">' + App.esc(state.clock) + '</span>' +
+    '    </div>' +
+    '  </div>' +
     '</header>' +
     '<div class="tape-band"><span>' + tapeTop + '</span></div>' +
     '<div class="topnav">' + navHtml + '</div>' +
