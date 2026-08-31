@@ -1259,7 +1259,7 @@ function renderSlot(id, placeholder, blurClass, defaultSrc) {
     'ondrop="App.handleSlotDrop(event,\'' + id + '\')" ' +
     'onclick="App.triggerSlotInput(\'' + id + '\')" title="Enviar uma imagem para este espaço (requer senha de administrador)">' +
     inner +
-    '<input type="file" accept="image/*" id="input-' + id + '" onchange="App.handleSlotFile(event,\'' + id + '\')">' +
+    '<input type="file" accept="image/*" id="input-' + id + '" onclick="event.stopPropagation()" onchange="App.handleSlotFile(event,\'' + id + '\')">' +
     '</div>';
 }
 
