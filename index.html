@@ -306,9 +306,18 @@ p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px
 .classification-badge.amarela{border-color:#997300;color:#997300;}
 .classification-badge.azul{border-color:#234b6e;color:#234b6e;}
 .brasil-regiao{fill:#d0b484;filter:drop-shadow(2px 3px 4px rgba(0,0,0,.6));}
-.brasil-regiao.hover{fill:#d40000;filter:drop-shadow(0 0 12px rgba(212,0,0,.7));}
+.brasil-regiao.hover,.brasil-regiao.selected{fill:#d40000;filter:drop-shadow(0 0 12px rgba(212,0,0,.7));}
 .slot-broken{background:#2a2a2a;}
 .slot-broken img{display:none;}
+
+/* Modo leve — desliga os efeitos mais pesados para o navegador (textura de ruido com
+   mix-blend-mode cobrindo a tela inteira, flicker continuo do cabecalho, faixa de aviso
+   rolando pra sempre) em aparelhos fracos, sem tirar nenhuma funcionalidade do site. */
+.modo-leve .noise-layer{display:none;}
+.modo-leve header.dip-header{animation:none;}
+.modo-leve .tape-band span{animation:none;padding-left:0;}
+.modo-leve .full-lock-screen h1{animation:none;}
+.modo-leve .blink-btn{animation:none;}
 .evidencia-galeria-label{font-size:.78em;color:#5a4f3c;margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px;}
 .evidencia-galeria{display:flex;flex-wrap:wrap;gap:10px;}
 .evidencia-thumb{width:150px;height:150px;overflow:hidden;border:1px solid #7a6a4f;box-shadow:2px 3px 8px rgba(0,0,0,.4);cursor:zoom-in;transition:.15s;}
@@ -361,6 +370,26 @@ p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px
   <img id="lightbox-img" src="" alt="Imagem ampliada" onclick="event.stopPropagation()">
 </div>
 <script>
+/* Modo leve: desliga os efeitos visuais mais pesados (textura de ruido com blend mode,
+   flicker do cabecalho, faixa de aviso rolando) para rodar melhor em aparelhos fracos
+   (ex.: totem Android com pouca RAM). Ativa sozinho se o navegador reportar pouca
+   memoria/preferencia por menos animacao, e pode ser forcado manualmente abrindo o
+   site com ?leve=1 no final do link uma unica vez (fica salvo no aparelho). Para
+   voltar ao normal, abra com ?leve=0. */
+(function () {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('leve') === '1') localStorage.setItem('siif_modo_leve', '1');
+    if (params.get('leve') === '0') localStorage.removeItem('siif_modo_leve');
+  } catch (e) {}
+  var low = false;
+  try {
+    low = localStorage.getItem('siif_modo_leve') === '1' ||
+      (typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 3) ||
+      (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  } catch (e) {}
+  if (low) document.documentElement.classList.add('modo-leve');
+})();
 const REGION_LIST = ['Norte','Nordeste','Centro-Oeste','Sudeste','Sul'];
 const REGION_POPUP_DIR = { Norte: 'top', Sul: 'bottom', Sudeste: 'right', Nordeste: 'right', 'Centro-Oeste': 'left' };
 const BADGE_DATAURL = 'assets/distintivo.jpg';
@@ -1282,9 +1311,14 @@ function renderMap() {
   var db = App.db();
   var mapRegionsHtml = REGION_LIST.map(function (r) {
     var d = REGION_PATHS[r] || '';
-    return '<path class="brasil-regiao" data-regiao="' + r + '" d="' + d + '" ' +
+    /* O destaque em vermelho fica preso ao estado (mapPreviewRegion), não só ao mouseenter/mouseleave:
+       em telas de toque (totem) o navegador nem sempre dispara "hover" ao tocar, então depender só
+       disso deixava o clique "mudo" (sem feedback visual) mesmo funcionando por baixo dos panos. */
+    var selected = state.mapPreviewRegion === r;
+    var cls = 'brasil-regiao' + (selected ? ' hover selected' : '');
+    return '<path class="' + cls + '" data-regiao="' + r + '" d="' + d + '" ' +
       'onmouseenter="App.mapEnterRegion(\'' + r + '\', this)" onmouseleave="App.mapLeaveRegion()" ' +
-      'onclick="App.mapClickRegion(\'' + r + '\', event)"></path>';
+      'onclick="App.mapClickRegion(\'' + r + '\', event)" ontouchstart="App.mapEnterRegion(\'' + r + '\', this)"></path>';
   }).join('');
 
   var pinHtml = '';
