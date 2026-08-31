@@ -552,7 +552,14 @@ var App = {
     try { return localStorage.getItem('siif_slot_' + id); } catch (e) { return null; }
   },
   setSlotImage: function (id, dataUrl) {
-    try { localStorage.setItem('siif_slot_' + id, dataUrl); } catch (e) { /* quota/private mode */ }
+    try {
+      localStorage.setItem('siif_slot_' + id, dataUrl);
+    } catch (e) {
+      /* Quota do navegador estourada (comum com fotos de celular sem compressão) ou modo anônimo.
+         Antes falhava em silêncio — a imagem simplesmente não aparecia, sem explicação nenhuma. */
+      window.alert('Não foi possível salvar essa imagem neste aparelho (provavelmente falta de espaço de armazenamento do navegador). Tente uma foto menor, ou apague alguma evidência antiga antes de enviar uma nova.');
+      return;
+    }
     this.refreshSlot(id);
   },
   removeSlotImage: function (id) {
@@ -641,7 +648,11 @@ var App = {
   checkAdminSenha: function (motivo) {
     var pw = window.prompt('Senha de administrador' + (motivo ? ' — ' + motivo : '') + ':');
     if (pw === null) return false;
-    if (pw !== SENHA_ADMIN) { window.alert('Senha incorreta.'); return false; }
+    /* Compara ignorando espaços nas pontas e maiúsculas/minúsculas: teclados de celular
+       costumam inserir um espaço extra ao autocompletar ou capitalizar a primeira letra
+       sozinhos, o que fazia a senha certa ser recusada por uma comparação exata. */
+    var norm = function (s) { return (s || '').trim().toLowerCase(); };
+    if (norm(pw) !== norm(SENHA_ADMIN)) { window.alert('Senha incorreta. Verifique se digitou "Folclore" sem espaços extras.'); return false; }
     return true;
   },
   resetRanking: function () {
@@ -723,9 +734,37 @@ var App = {
     this._readFileToSlot(f, id);
   },
   _readFileToSlot: function (file, id) {
-    var reader = new FileReader();
-    reader.onload = function (e) { App.setSlotImage(id, e.target.result); };
-    reader.readAsDataURL(file);
+    /* Fotos direto da câmera do celular costumam vir enormes (varios MB) e o navegador só
+       tem uns 5-10MB de armazenamento local no total — várias evidências desse tamanho
+       estouram a cota e a imagem simplesmente não salva. Por isso redimensionamos e
+       recomprimimos no próprio navegador antes de guardar; se algo der errado nesse
+       processo, cai de volta pro arquivo original sem compressão. */
+    var MAX_DIM = 1280, QUALITY = 0.82;
+    var fallback = function () {
+      var reader = new FileReader();
+      reader.onload = function (e) { App.setSlotImage(id, e.target.result); };
+      reader.readAsDataURL(file);
+    };
+    try {
+      var img = new Image();
+      var objectUrl = URL.createObjectURL(file);
+      img.onload = function () {
+        try {
+          var w = img.naturalWidth, h = img.naturalHeight;
+          var scale = Math.min(1, MAX_DIM / Math.max(w, h));
+          var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+          var canvas = document.createElement('canvas');
+          canvas.width = cw; canvas.height = ch;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, cw, ch);
+          var compressed = canvas.toDataURL('image/jpeg', QUALITY);
+          URL.revokeObjectURL(objectUrl);
+          App.setSlotImage(id, compressed);
+        } catch (e2) { URL.revokeObjectURL(objectUrl); fallback(); }
+      };
+      img.onerror = function () { URL.revokeObjectURL(objectUrl); fallback(); };
+      img.src = objectUrl;
+    } catch (e) { fallback(); }
   },
 
   /* ---------- gate / boot ---------- */
