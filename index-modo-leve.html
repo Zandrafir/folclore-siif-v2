@@ -1859,7 +1859,6 @@ function renderGameDetetive() {
     return '' +
       '<div class="' + cls + '">' +
       '  <div class="suspect-name">' + App.esc(s.nome) + '</div>' +
-      '  <div class="suspect-region">' + App.esc(s.regiao) + '</div>' +
       '  <div class="suspect-actions">' +
       '    <button class="btn btn-sm" ' + (state.detRoundOver ? 'disabled' : '') + ' onclick="App.toggleEliminarSuspeito(\'' + s.id + '\')">' + (eliminado ? 'REINCLUIR' : 'ELIMINAR') + '</button>' +
       '    <button class="btn btn-sm btn-accuse" ' + (state.detRoundOver || eliminado ? 'disabled' : '') + ' onclick="App.confirmarSuspeitoFinal(\'' + s.id + '\')">ACUSAR</button>' +
