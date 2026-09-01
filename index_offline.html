@@ -359,6 +359,27 @@ p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px
   .game-guess-row select{width:100%;min-width:0;}
 }
 
+/* ===== Modo Ranking x Apenas Conhecer / Portal de identificação ===== */
+.mode-select-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto 10px;position:relative;z-index:1;}
+.mode-btn{background:#1c1c1c;color:#ccc;border:1px solid #444;padding:12px 22px;cursor:pointer;font-family:inherit;font-size:.85em;text-transform:uppercase;letter-spacing:.5px;transition:.18s;}
+.mode-btn:hover{border-color:var(--amber);}
+.mode-btn.active{border-color:var(--amber);color:var(--amber);box-shadow:0 0 14px rgba(217,164,65,.3);background:rgba(217,164,65,.08);}
+.mode-hint{max-width:800px;margin:0 auto 22px;text-align:center;color:var(--text-muted);font-size:.8em;line-height:1.6;position:relative;z-index:1;}
+.btn-outline{background:transparent;border:1px solid #555;color:#ccc;}
+.btn-outline:hover{border-color:var(--amber);color:var(--amber);box-shadow:none;}
+.activity-done{display:block;margin-top:8px;color:#7fbf6a;font-size:.72em;letter-spacing:.5px;}
+.leaderboard-sala{color:var(--text-muted);font-size:.85em;}
+.score-note{color:var(--text-muted);font-size:.85em;margin-top:6px;}
+.game-gate{max-width:520px;margin:40px auto;background:var(--panel);border:1px solid #333;padding:32px 28px;text-align:center;position:relative;z-index:1;}
+.game-gate h2{color:var(--amber);font-family:'Special Elite',monospace;margin:0 0 14px;font-size:1.2em;}
+.game-gate .gate-game-line{color:#ccc;font-size:.9em;margin:0 0 10px;}
+.game-gate .gate-current{color:#ccc;font-size:1em;margin:0 0 20px;}
+.game-gate .gate-hint{color:var(--text-muted);font-size:.82em;margin:0 0 18px;}
+.game-gate .player-name-input{width:100%;margin-bottom:12px;box-sizing:border-box;}
+.gate-sala-select{width:100%;background:#111;border:1px solid #444;color:#fff;padding:10px 12px;font-family:inherit;font-size:.9em;margin-bottom:20px;box-sizing:border-box;}
+.gate-sala-select:focus{outline:none;border-color:var(--amber);}
+.gate-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
 </style>
 </head>
 <body>
@@ -457,8 +478,10 @@ var SENHA_ACESSO = 'Ephim';
    site — só quem já sabe o valor consegue usar essas funções. */
 var SENHA_ADMIN = 'Folclore';
 
-/* Patentes do S.I.I.F — ranking local (localStorage), por jogador, a cada 10 pontos sobe uma patente. */
-var PONTOS_POR_PATENTE = 10;
+/* Patentes do S.I.I.F — ranking local (localStorage), por jogador. Pontuação de cada jogador é a
+   soma do aproveitamento (0-100%) obtido em cada um dos 5 jogos, contado uma única vez por jogo —
+   por isso a pontuação máxima possível é 500 (100% em todos os 5 jogos). */
+var PONTOS_POR_PATENTE = 50;
 var RANK_TIERS = [
   { title: 'Investigador por Hobby', min: 0 * PONTOS_POR_PATENTE },
   { title: 'Auxiliar de Campo', min: 1 * PONTOS_POR_PATENTE },
@@ -471,6 +494,13 @@ var RANK_TIERS = [
   { title: 'Detetive Nível Ouro', min: 8 * PONTOS_POR_PATENTE },
   { title: 'Detetive Nível Diamante', min: 9 * PONTOS_POR_PATENTE },
 ];
+
+/* Salas da escola — usadas no cadastro do investigador (jogadores da escola inteira). */
+var SALAS = ['6ºA', '6ºB', '6ºC', '7ºA', '7ºB', '7ºC', '8ºA', '8ºB', '8ºC', '8ºD', '8ºE', '9ºA', '9ºB', '9ºC', '9ºD', '9ºE'];
+
+/* Os 5 jogos de atividade: chave interna -> rótulo exibido e nº de rodadas (usado para calcular
+   o aproveitamento em % de cada jogo no ranking). Cada jogo só conta 1x por investigador. */
+var GAME_LABELS = { descubra: 'Descubra a Lenda', vf: 'Teste de Campo', associe: 'Mapeamento de Campo', detetive: 'Detetive de Eliminação', rv: 'Reconhecimento Visual' };
 
 var state = {
   screen: 'gate',
@@ -486,29 +516,37 @@ var state = {
   pinPoint: null, linePoints: null, areaSize: null,
 
   /* Teste de Campo (Verdadeiro ou Falso) */
-  vfIndex: 0, vfTotal: 10, vfScore: 0, vfCurrent: null, vfFeedback: '', vfFeedbackOk: null, vfFinished: false,
+  vfIndex: 0, vfTotal: 10, vfScore: 0, vfCurrent: null, vfFeedback: '', vfFeedbackOk: null, vfFinished: false, vfUsedIds: [],
 
   /* Mapeamento de Campo (associar lenda x região) */
-  amIndex: 0, amRounds: [], amScore: 0, amAssign: {}, amFeedback: '', amFinished: false,
+  amIndex: 0, amRounds: [], amScore: 0, amMaxScore: 0, amAssign: {}, amFeedback: '', amFinished: false,
 
   /* Detetive de Eliminação */
-  detIndex: 0, detTotal: 6, detScore: 0, detFinished: false, detSuspects: [], detTargetId: '',
+  detIndex: 0, detTotal: 6, detScore: 0, detAcertos: 0, detFinished: false, detSuspects: [], detTargetId: '', detUsedIds: [],
   detPistas: [], detPistaIndex: 0, detEliminados: {}, detFeedback: '', detFeedbackOk: null, detRoundOver: false,
 
   /* Reconhecimento Visual */
-  rvIndex: 0, rvTotal: 10, rvScore: 0, rvFinished: false, rvCurrent: null, rvFeedback: '', rvFeedbackOk: null,
+  rvIndex: 0, rvTotal: 10, rvScore: 0, rvFinished: false, rvCurrent: null, rvFeedback: '', rvFeedbackOk: null, rvUsedIds: [],
 
   /* Modo cronometrado (global) */
   timedMode: false, timeLeft: 0, timeTotal: 0,
 
+  /* Modo Ranking x Apenas Conhecer — escolhido ao entrar na aba de Atividades.
+     null = ainda não escolhido nesta sessão do totem/navegador. */
+  rankingMode: null,
+
   /* Ranking multiplayer — jogador ativo (localStorage) */
   playerName: '',
-  playerNameInput: '',
-  switchingPlayer: false,
 
-  /* Pontos ganhos na atividade recém-concluída (exibidos no resumo final); se não houver jogador definido, ficam pendentes até o nome ser informado */
-  lastPointsGain: 0,
-  pendingPoints: 0,
+  /* Portal de identificação do investigador (cadastro/confirmação antes de cada jogo) */
+  gameGateShow: false,
+  gameGateMode: 'register', /* 'register' | 'confirm' | 'switch' */
+  pendingGameLaunch: null,
+  gateNameInput: '',
+  gateSalaInput: '',
+
+  /* Resultado do último jogo concluído (para exibir na tela de resumo) */
+  lastGameKey: '', lastGamePercent: null, lastGameAlreadyCounted: false,
 };
 
 var App = {
@@ -586,12 +624,29 @@ var App = {
     if (ov) ov.classList.remove('open');
   },
 
-  /* ---------- Ranking multiplayer (persistido em localStorage) ---------- */
+  /* ---------- Ranking multiplayer (persistido em localStorage) ----------
+     Cada jogador é guardado como { points, sala, games: { <chave>: {done,percent} | null } }.
+     "points" é sempre a soma dos "percent" dos jogos já concluídos (cada jogo só é contado 1x),
+     então o máximo possível (500) só é atingido fazendo 100% nos 5 jogos, sem repetir nenhum. */
+  newPlayerRecord: function (sala) {
+    return { points: 0, sala: sala || '', games: { descubra: null, vf: null, associe: null, detetive: null, rv: null } };
+  },
   getPlayers: function () {
     try {
       var raw = localStorage.getItem('siif_players');
       var obj = raw ? JSON.parse(raw) : {};
-      return (obj && typeof obj === 'object') ? obj : {};
+      if (!obj || typeof obj !== 'object') return {};
+      /* migração: versões antigas guardavam { nome: pontosNumero } */
+      Object.keys(obj).forEach(function (name) {
+        if (typeof obj[name] === 'number') {
+          var pts = obj[name];
+          obj[name] = App.newPlayerRecord('');
+          obj[name].points = pts;
+        } else if (obj[name] && !obj[name].games) {
+          obj[name].games = { descubra: null, vf: null, associe: null, detetive: null, rv: null };
+        }
+      });
+      return obj;
     } catch (e) { return {}; }
   },
   savePlayers: function (players) {
@@ -600,56 +655,36 @@ var App = {
   loadPlayerName: function () {
     try { state.playerName = localStorage.getItem('siif_current_player') || ''; } catch (e) { state.playerName = ''; }
   },
-  setPlayerName: function (name) {
-    name = (name || '').trim();
-    if (!name) return;
+  currentPlayerSala: function () {
     var players = App.getPlayers();
-    if (!(name in players)) players[name] = 0;
-    App.savePlayers(players);
-    state.playerName = name;
-    state.switchingPlayer = false;
-    state.playerNameInput = '';
-    try { localStorage.setItem('siif_current_player', name); } catch (e) {}
-    App.render();
+    return (state.playerName && players[state.playerName]) ? players[state.playerName].sala : '';
   },
-  startSwitchPlayer: function () {
-    state.switchingPlayer = true;
-    state.playerNameInput = state.playerName || '';
-    App.render();
-  },
-  cancelSwitchPlayer: function () {
-    state.switchingPlayer = false;
-    App.render();
-  },
-  onPlayerNameInput: function (v) { state.playerNameInput = v; },
-  confirmSwitchPlayer: function () { App.setPlayerName(state.playerNameInput); },
   getPoints: function (name) {
     name = name || state.playerName;
     if (!name) return 0;
     var players = App.getPlayers();
-    return players[name] || 0;
+    return players[name] ? players[name].points : 0;
   },
-  addPoints: function (n) {
-    if (!n) return 0;
-    state.lastPointsGain = n;
-    if (!state.playerName) {
-      state.pendingPoints = (state.pendingPoints || 0) + n;
-      return 0;
-    }
-    var players = App.getPlayers();
-    players[state.playerName] = (players[state.playerName] || 0) + n;
-    App.savePlayers(players);
-    return players[state.playerName];
+  computeTotalPoints: function (p) {
+    var total = 0;
+    Object.keys(GAME_LABELS).forEach(function (k) { if (p.games[k] && p.games[k].done) total += p.games[k].percent; });
+    return total;
   },
-  claimPendingPoints: function (name) {
-    name = (name || '').trim();
-    if (!name || !state.pendingPoints) return;
-    App.setPlayerName(name);
+  /* Registra o resultado de um jogo recém-concluído no ranking do investigador atual.
+     Só conta na primeira vez que aquele jogo é jogado por ele — tentativas seguintes (via modo
+     "Apenas Conhecer") não alteram o ranking, mantendo a competição justa. */
+  finishGameRanking: function (key, correct, total) {
+    state.lastGameKey = key;
+    state.lastGamePercent = total > 0 ? Math.round((correct / total) * 100) : 0;
+    state.lastGameAlreadyCounted = false;
+    if (!state.rankingMode || !state.playerName) return;
     var players = App.getPlayers();
-    players[name] = (players[name] || 0) + state.pendingPoints;
+    var p = players[state.playerName];
+    if (!p) return;
+    if (p.games[key] && p.games[key].done) { state.lastGameAlreadyCounted = true; return; }
+    p.games[key] = { done: true, percent: state.lastGamePercent };
+    p.points = App.computeTotalPoints(p);
     App.savePlayers(players);
-    state.pendingPoints = 0;
-    App.render();
   },
   /* ---------- Acesso de administrador (protege ações sensíveis num totem compartilhado) ---------- */
   checkAdminSenha: function (motivo) {
@@ -667,11 +702,10 @@ var App = {
     if (!window.confirm('Isso vai apagar a pontuação de TODOS os investigadores salva neste dispositivo (ideal para começar uma turma nova ou depois de um teste). Confirmar?')) return;
     try { localStorage.removeItem('siif_players'); } catch (e) {}
     try { localStorage.removeItem('siif_current_player'); } catch (e) {}
+    try { localStorage.removeItem('siif_descubra_pool'); } catch (e) {}
     state.playerName = '';
-    state.playerNameInput = '';
-    state.switchingPlayer = false;
-    state.pendingPoints = 0;
-    state.lastPointsGain = 0;
+    state.gameGateShow = false;
+    state.lastGamePercent = null;
     App.render();
   },
   getRank: function (points) {
@@ -685,12 +719,106 @@ var App = {
     return { title: atual.title, index: RANK_TIERS.indexOf(atual), points: points, proxima: proxima };
   },
 
+  /* ---------- Portal de identificação do investigador ----------
+     Aberto (a) ao clicar em qualquer jogo pela primeira vez ("registrar"), (b) a cada novo jogo
+     para confirmar se é o mesmo investigador ("confirm"), ou (c) ao pedir para trocar ("switch"). */
+  GAME_ORDER: ['descubra', 'vf', 'associe', 'detetive', 'rv'],
+  launchGameByKey: function (key) {
+    if (key === 'descubra') App.iniciarJogo('descubra');
+    else if (key === 'vf') App.iniciarJogoVF();
+    else if (key === 'associe') App.iniciarJogoAssocie();
+    else if (key === 'detetive') App.iniciarJogoDetetive();
+    else if (key === 'rv') App.iniciarJogoRV();
+  },
+  requestPlayGame: function (key) {
+    if (!state.rankingMode) { App.launchGameByKey(key); return; }
+    var players = App.getPlayers();
+    if (state.playerName && players[state.playerName] && players[state.playerName].games[key] && players[state.playerName].games[key].done) {
+      window.alert('Você já jogou "' + GAME_LABELS[key] + '" no modo Ranking — cada jogo só conta uma vez por investigador, para a competição ficar justa. Para jogar de novo (sem contar pontos), mude para "Apenas Conhecer".');
+      return;
+    }
+    state.pendingGameLaunch = key;
+    App.openPlayerGate(false);
+  },
+  openPlayerGate: function (forceSwitch) {
+    var players = App.getPlayers();
+    state.gateNameInput = (forceSwitch || !state.playerName) ? '' : state.playerName;
+    state.gateSalaInput = (!forceSwitch && state.playerName && players[state.playerName]) ? players[state.playerName].sala : '';
+    state.gameGateMode = (!state.playerName || forceSwitch) ? (state.playerName ? 'switch' : 'register') : 'confirm';
+    state.gameGateShow = true;
+    App.render();
+  },
+  confirmSameGatePlayer: function () {
+    state.gameGateShow = false;
+    var key = state.pendingGameLaunch;
+    state.pendingGameLaunch = null;
+    if (key) App.launchGameByKey(key);
+    else App.render();
+  },
+  startGateSwitch: function () {
+    state.gameGateMode = 'switch';
+    state.gateNameInput = '';
+    state.gateSalaInput = '';
+    App.render();
+  },
+  cancelGate: function () {
+    state.gameGateShow = false;
+    state.pendingGameLaunch = null;
+    App.render();
+  },
+  onGateNameInput: function (v) { state.gateNameInput = v; },
+  onGateSalaInput: function (v) { state.gateSalaInput = v; },
+  confirmGateRegister: function () {
+    var name = (state.gateNameInput || '').trim();
+    var sala = state.gateSalaInput || '';
+    if (!name) { window.alert('Digite seu nome para continuar.'); return; }
+    if (!sala) { window.alert('Selecione sua sala para continuar.'); return; }
+    var players = App.getPlayers();
+    /* Se já existe um investigador com esse nome, as novas partidas contam para o ranking dele. */
+    if (!players[name]) players[name] = App.newPlayerRecord(sala);
+    players[name].sala = sala;
+    App.savePlayers(players);
+    state.playerName = name;
+    try { localStorage.setItem('siif_current_player', name); } catch (e) {}
+    var key = state.pendingGameLaunch;
+    state.pendingGameLaunch = null;
+    state.gameGateShow = false;
+    if (key) {
+      if (players[name].games[key] && players[name].games[key].done) {
+        window.alert('"' + App.esc(name) + '" já jogou "' + GAME_LABELS[key] + '" no modo Ranking. Escolha outro jogo, ou mude para "Apenas Conhecer" para jogar de novo sem contar pontos.');
+        App.render();
+        return;
+      }
+      App.launchGameByKey(key);
+    } else {
+      App.render();
+    }
+  },
+
+  /* ---------- Modo Ranking x Apenas Conhecer ---------- */
+  loadRankingMode: function () {
+    try {
+      var v = localStorage.getItem('siif_ranking_mode');
+      state.rankingMode = v === '1' ? true : (v === '0' ? false : null);
+    } catch (e) { state.rankingMode = null; }
+  },
+  setRankingMode: function (on) {
+    state.rankingMode = on;
+    try { localStorage.setItem('siif_ranking_mode', on ? '1' : '0'); } catch (e) {}
+    /* No modo Ranking o cronômetro fica sempre ativo e não pode ser desligado; ao trocar para
+       "Apenas Conhecer" ele volta a ficar livre (desligado por padrão). */
+    state.timedMode = !!on;
+    try { localStorage.setItem('siif_timed_mode', state.timedMode ? '1' : '0'); } catch (e) {}
+    App.render();
+  },
+
   /* ---------- Modo Cronometrado ---------- */
   _timerInterval: null,
   loadTimedMode: function () {
     try { state.timedMode = localStorage.getItem('siif_timed_mode') === '1'; } catch (e) { state.timedMode = false; }
   },
   toggleTimedMode: function () {
+    if (state.rankingMode) return; /* travado enquanto estiver jogando por Ranking */
     state.timedMode = !state.timedMode;
     try { localStorage.setItem('siif_timed_mode', state.timedMode ? '1' : '0'); } catch (e) {}
     App.render();
@@ -927,9 +1055,33 @@ var App = {
   toggleTestemunhaAudio: function (caseId) { App.toggleTabAudio(caseId, 'testemunha'); },
 
   /* ---------- jogos ---------- */
-  iniciarJogo: function (tipo) {
+  /* Sorteio "em baralho" das 15 lendas de cada partida de Descubra a Lenda: consome ids de uma
+     pilha embaralhada persistida (siif_descubra_pool) e, quando ela acaba, embaralha de novo o
+     conjunto completo das 33 lendas — assim, ao longo de várias partidas, todas as lendas
+     acabam entrando no jogo de forma alternada, e nunca há repetição dentro da mesma partida. */
+  loadDescubraPool: function () {
+    try { var raw = localStorage.getItem('siif_descubra_pool'); var arr = raw ? JSON.parse(raw) : []; return Array.isArray(arr) ? arr : []; } catch (e) { return []; }
+  },
+  saveDescubraPool: function (pool) {
+    try { localStorage.setItem('siif_descubra_pool', JSON.stringify(pool)); } catch (e) {}
+  },
+  nextDescubraIds: function (n) {
     var db = App.db();
-    var ids = App.embaralhar(db.map(function (c) { return c.id; }));
+    var allIds = db.map(function (c) { return c.id; });
+    var pool = App.loadDescubraPool();
+    var result = [];
+    var guard = 0;
+    while (result.length < n && guard < 1000) {
+      guard++;
+      if (!pool.length) pool = App.embaralhar(allIds);
+      var id = pool.shift();
+      if (result.indexOf(id) === -1) result.push(id);
+    }
+    App.saveDescubraPool(pool);
+    return result;
+  },
+  iniciarJogo: function (tipo) {
+    var ids = App.nextDescubraIds(15);
     state.screen = 'game'; state.gameType = tipo; state.gameCaseIds = ids;
     state.gameIndex = 0; state.gamePoints = 0; state.gameCorrect = 0; state.gameFinished = false;
     App.render();
@@ -947,9 +1099,11 @@ var App = {
     state.gameShowedBO = false; state.gameGuessId = '';
     state.gameFeedback = ''; state.gameFeedbackOk = null; state.gameOptions = options;
     App.render();
-    App.startTimer(30, function () { App.pularRodada(); });
+    /* 45s: rodada com depoimento + Boletim de Ocorrência, texto mais longo que os demais jogos. */
+    App.startTimer(45, function () { App.pularRodada(); });
   },
-  revealBO: function () { state.gameShowedBO = true; App.render(); },
+  /* Pedir a dica extra (Boletim de Ocorrência) reinicia o cronômetro da rodada. */
+  revealBO: function () { state.gameShowedBO = true; App.render(); App.startTimer(45, function () { App.pularRodada(); }); },
   onGuessChange: function (val) { state.gameGuessId = val; },
   confirmarPalpite: function () {
     var caso = App.currentGameCase();
@@ -974,7 +1128,7 @@ var App = {
     var next = state.gameIndex + 1;
     if (next >= state.gameCaseIds.length) {
       state.gameFinished = true;
-      App.addPoints(state.gameCorrect);
+      App.finishGameRanking('descubra', state.gameCorrect, state.gameCaseIds.length);
       App.render();
     }
     else { state.gameIndex = next; App.render(); setTimeout(function () { App.startRound(); }, 0); }
@@ -988,7 +1142,7 @@ var App = {
   /* ---------- Teste de Campo (Verdadeiro ou Falso) ---------- */
   iniciarJogoVF: function () {
     state.screen = 'gamevf';
-    state.vfIndex = 0; state.vfTotal = 10; state.vfScore = 0; state.vfFinished = false;
+    state.vfIndex = 0; state.vfTotal = 10; state.vfScore = 0; state.vfFinished = false; state.vfUsedIds = [];
     state.vfFeedback = ''; state.vfFeedbackOk = null;
     App.buildVFStatement();
     App.render();
@@ -996,7 +1150,11 @@ var App = {
   },
   buildVFStatement: function () {
     var db = App.db();
-    var caso = db[Math.floor(Math.random() * db.length)];
+    /* Nunca repete o mesmo arquivo dentro da mesma partida. */
+    var disponiveis = db.filter(function (c) { return state.vfUsedIds.indexOf(c.id) === -1; });
+    if (!disponiveis.length) disponiveis = db;
+    var caso = disponiveis[Math.floor(Math.random() * disponiveis.length)];
+    state.vfUsedIds.push(caso.id);
     var isTrue = Math.random() < 0.5;
     var tipo = ['regiao', 'ameaca', 'modus'][Math.floor(Math.random() * 3)];
     var text = '';
@@ -1038,7 +1196,7 @@ var App = {
   },
   nextVF: function () {
     var next = state.vfIndex + 1;
-    if (next >= state.vfTotal) { state.vfFinished = true; App.addPoints(state.vfScore); App.render(); }
+    if (next >= state.vfTotal) { state.vfFinished = true; App.finishGameRanking('vf', state.vfScore, state.vfTotal); App.render(); }
     else {
       state.vfIndex = next; App.buildVFStatement(); App.render();
       App.startTimer(15, function () { App.answerVF(!state.vfCurrent.isTrue); });
@@ -1060,13 +1218,15 @@ var App = {
     for (var i = 0; i < shuffled.length; i += 4) {
       state.amRounds.push(shuffled.slice(i, i + 4));
     }
+    state.amMaxScore = shuffled.length;
     App.startAssocieRound();
     App.render();
   },
   startAssocieRound: function () {
     state.amAssign = {};
     state.amFeedback = '';
-    App.startTimer(30, function () { App.checkAssocie(true); });
+    /* 60s: cada rodada exige associar 4 lendas de uma vez (mais de uma escolha por rodada). */
+    App.startTimer(60, function () { App.checkAssocie(true); });
   },
   assignAssocie: function (caseId, regiao) {
     state.amAssign[caseId] = regiao;
@@ -1091,7 +1251,7 @@ var App = {
   },
   nextAssocie: function () {
     var next = state.amIndex + 1;
-    if (next >= state.amRounds.length) { state.amFinished = true; App.addPoints(state.amScore); App.render(); }
+    if (next >= state.amRounds.length) { state.amFinished = true; App.finishGameRanking('associe', state.amScore, state.amMaxScore); App.render(); }
     else { state.amIndex = next; App.startAssocieRound(); App.render(); }
   },
   exitGameAssocie: function () {
@@ -1103,15 +1263,20 @@ var App = {
   /* ---------- Detetive de Eliminação ---------- */
   iniciarJogoDetetive: function () {
     state.screen = 'gamedet';
-    state.detIndex = 0; state.detTotal = 6; state.detScore = 0; state.detAcertos = 0; state.detFinished = false;
+    state.detIndex = 0; state.detTotal = 6; state.detScore = 0; state.detAcertos = 0; state.detFinished = false; state.detUsedIds = [];
     App.startDetetiveRound();
     App.render();
   },
   startDetetiveRound: function () {
     var db = App.db();
-    var embaralhado = App.embaralhar(db);
+    /* O caso investigado (culpado) nunca se repete dentro da mesma partida. */
+    var disponiveis = db.filter(function (c) { return state.detUsedIds.indexOf(c.id) === -1; });
+    if (disponiveis.length < 1) disponiveis = db;
+    var embaralhado = App.embaralhar(disponiveis);
     var alvo = embaralhado[0];
-    var suspeitos = App.embaralhar(embaralhado.slice(1, 6).concat([alvo]));
+    state.detUsedIds.push(alvo.id);
+    var decoys = App.embaralhar(db.filter(function (c) { return c.id !== alvo.id; })).slice(0, 5);
+    var suspeitos = App.embaralhar(decoys.concat([alvo]));
     var trechoMO = App.removerTags(alvo.abas.entidade.blocos[0].texto).split('. ')[0] + '.';
     state.detSuspects = suspeitos;
     state.detTargetId = alvo.id;
@@ -1165,7 +1330,7 @@ var App = {
   },
   nextDetetive: function () {
     var next = state.detIndex + 1;
-    if (next >= state.detTotal) { state.detFinished = true; App.addPoints(state.detAcertos); App.render(); }
+    if (next >= state.detTotal) { state.detFinished = true; App.finishGameRanking('detetive', state.detAcertos, state.detTotal); App.render(); }
     else { state.detIndex = next; App.startDetetiveRound(); }
   },
   exitGameDetetive: function () {
@@ -1177,15 +1342,19 @@ var App = {
   /* ---------- Reconhecimento Visual ---------- */
   iniciarJogoRV: function () {
     state.screen = 'gamerv';
-    state.rvIndex = 0; state.rvTotal = 10; state.rvScore = 0; state.rvFinished = false;
+    state.rvIndex = 0; state.rvTotal = 10; state.rvScore = 0; state.rvFinished = false; state.rvUsedIds = [];
     App.buildRVRound();
     App.render();
   },
   buildRVRound: function () {
     var db = App.db();
-    var embaralhado = App.embaralhar(db);
-    var alvo = embaralhado[0];
-    var opcoes = App.embaralhar([alvo].concat(embaralhado.slice(1, 4)));
+    /* O rosto perguntado nunca se repete dentro da mesma partida. */
+    var disponiveis = db.filter(function (c) { return state.rvUsedIds.indexOf(c.id) === -1; });
+    if (!disponiveis.length) disponiveis = db;
+    var alvo = App.embaralhar(disponiveis)[0];
+    state.rvUsedIds.push(alvo.id);
+    var outros = App.embaralhar(db.filter(function (c) { return c.id !== alvo.id; })).slice(0, 3);
+    var opcoes = App.embaralhar([alvo].concat(outros));
     state.rvCurrent = { alvoId: alvo.id, foto: alvo.abas.entidade.foto, opcoes: opcoes };
     state.rvFeedback = ''; state.rvFeedbackOk = null;
     App.render();
@@ -1204,7 +1373,7 @@ var App = {
   },
   nextRV: function () {
     var next = state.rvIndex + 1;
-    if (next >= state.rvTotal) { state.rvFinished = true; App.addPoints(state.rvScore); App.render(); }
+    if (next >= state.rvTotal) { state.rvFinished = true; App.finishGameRanking('rv', state.rvScore, state.rvTotal); App.render(); }
     else { state.rvIndex = next; App.buildRVRound(); }
   },
   exitGameRV: function () {
@@ -1223,6 +1392,7 @@ var App = {
     }, 1000);
     state.clock = new Date().toLocaleString('pt-BR');
     App.loadTimedMode();
+    App.loadRankingMode();
     App.loadPlayerName();
     if ('speechSynthesis' in window) {
       App.ptVoice = App.pickPtVoice();
@@ -1352,7 +1522,8 @@ function renderChrome() {
   }).join('');
 
   var content = '';
-  if (isMap) content = renderMap();
+  if (state.gameGateShow) content = renderGameGate();
+  else if (isMap) content = renderMap();
   else if (isFiles) content = renderFiles();
   else if (isDossier) content = renderDossier();
   else if (isActivities) content = renderActivities();
@@ -1575,24 +1746,10 @@ function renderDossier() {
 }
 
 function renderPlayerSwitcher() {
-  if (state.switchingPlayer) {
-    return '' +
-      '<div class="player-switcher">' +
-      '  <input type="text" class="player-name-input" placeholder="Nome do investigador" maxlength="24" value="' + App.esc(state.playerNameInput) + '" ' +
-      '    oninput="App.onPlayerNameInput(this.value)" onkeydown="if(event.key===\'Enter\')App.confirmSwitchPlayer()">' +
-      '  <button class="btn btn-sm" onclick="App.confirmSwitchPlayer()">CONFIRMAR</button>' +
-      (state.playerName ? '  <button class="btn btn-sm" onclick="App.cancelSwitchPlayer()">CANCELAR</button>' : '') +
-      '</div>';
-  }
   if (!state.playerName) {
-    return '' +
-      '<div class="player-switcher">' +
-      '  <input type="text" class="player-name-input" placeholder="Digite seu nome para entrar no ranking" maxlength="24" value="' + App.esc(state.playerNameInput) + '" ' +
-      '    oninput="App.onPlayerNameInput(this.value)" onkeydown="if(event.key===\'Enter\')App.confirmSwitchPlayer()">' +
-      '  <button class="btn btn-sm" onclick="App.confirmSwitchPlayer()">ENTRAR NO RANKING</button>' +
-      '</div>';
+    return '<div class="player-switcher"><button class="btn btn-sm" onclick="App.openPlayerGate(false)">REGISTRAR / ENTRAR NO RANKING</button></div>';
   }
-  return '<button class="btn btn-sm" onclick="App.startSwitchPlayer()">TROCAR DE INVESTIGADOR</button>';
+  return '<button class="btn btn-sm" onclick="App.openPlayerGate(true)">TROCAR DE INVESTIGADOR</button>';
 }
 
 function renderRankPanel() {
@@ -1609,28 +1766,28 @@ function renderRankPanel() {
       '<div class="rank-current">' +
       '  <div class="rank-current-badge">🏅</div>' +
       '  <div>' +
-      '    <div class="rank-current-title">' + App.esc(state.playerName) + ' — ' + App.esc(atual.title) + '</div>' +
-      '    <div class="rank-current-xp">' + rank.points + ' pontos' + (proxima ? ' — faltam ' + (proxima.min - rank.points) + ' para ' + App.esc(proxima.title) : ' — patente máxima atingida!') + '</div>' +
+      '    <div class="rank-current-title">' + App.esc(state.playerName) + (App.currentPlayerSala() ? ' (' + App.esc(App.currentPlayerSala()) + ')' : '') + ' — ' + App.esc(atual.title) + '</div>' +
+      '    <div class="rank-current-xp">' + rank.points + ' / 500 pontos' + (proxima ? ' — faltam ' + (proxima.min - rank.points) + ' para ' + App.esc(proxima.title) : ' — patente máxima atingida!') + '</div>' +
       '    <div class="rank-progress-bar"><div class="rank-progress-fill" style="width:' + pct + '%"></div></div>' +
       '  </div>' +
       '</div>';
   } else {
-    currentBlock = '<p style="color:var(--text-muted);font-size:.85em;margin:0 0 12px;">Informe seu nome para entrar no ranking da turma e guardar seus pontos.</p>';
+    currentBlock = '<p style="color:var(--text-muted);font-size:.85em;margin:0 0 12px;">Informe seu nome e sua sala para entrar no ranking da escola.</p>';
   }
 
   var leaderboardHtml = '';
   if (names.length) {
-    var sorted = names.slice().sort(function (a, b) { return players[b] - players[a]; });
+    var sorted = names.slice().sort(function (a, b) { return players[b].points - players[a].points; });
     var rowsHtml = sorted.map(function (n, i) {
-      var r = App.getRank(players[n]);
+      var r = App.getRank(players[n].points);
       return '<div class="leaderboard-row' + (n === state.playerName ? ' me' : '') + '">' +
         '<span class="leaderboard-pos">' + (i + 1) + 'º</span>' +
-        '<span class="leaderboard-name">' + App.esc(n) + '</span>' +
+        '<span class="leaderboard-name">' + App.esc(n) + (players[n].sala ? ' <span class="leaderboard-sala">' + App.esc(players[n].sala) + '</span>' : '') + '</span>' +
         '<span class="leaderboard-rank">' + App.esc(r.title) + '</span>' +
-        '<span class="leaderboard-pts">' + players[n] + ' pts</span>' +
+        '<span class="leaderboard-pts">' + players[n].points + ' pts</span>' +
         '</div>';
     }).join('');
-    leaderboardHtml = '<div class="leaderboard"><div class="leaderboard-label">Ranking da Turma (' + names.length + ' investigador' + (names.length > 1 ? 'es' : '') + ')</div>' + rowsHtml + '</div>';
+    leaderboardHtml = '<div class="leaderboard"><div class="leaderboard-label">Ranking da Escola (' + names.length + ' investigador' + (names.length > 1 ? 'es' : '') + ')</div>' + rowsHtml + '</div>';
   }
 
   var tiersHtml = RANK_TIERS.map(function (t, i) {
@@ -1653,64 +1810,110 @@ function renderRankPanel() {
 
 function renderActivities() {
   var db = App.db();
-  var countDescubra = db.length;
   var timedOn = state.timedMode;
+  var players = App.getPlayers();
+  var myGames = (state.playerName && players[state.playerName]) ? players[state.playerName].games : null;
+  var doneTag = function (key) {
+    return (state.rankingMode && myGames && myGames[key] && myGames[key].done)
+      ? '<span class="activity-done">✔ JÁ JOGADO (' + myGames[key].percent + '%)</span>' : '';
+  };
+
+  var modeRow = '' +
+    '<div class="mode-select-row">' +
+    '  <button class="mode-btn' + (state.rankingMode === true ? ' active' : '') + '" onclick="App.setRankingMode(true)">🏆 JOGAR POR RANKING</button>' +
+    '  <button class="mode-btn' + (state.rankingMode === false ? ' active' : '') + '" onclick="App.setRankingMode(false)">👀 APENAS CONHECER</button>' +
+    '</div>' +
+    (state.rankingMode === null ? '<p class="mode-hint">Escolha um modo para jogar: no modo <strong>Ranking</strong> o cronômetro fica sempre ativo, é preciso informar nome e sala, e cada jogo só pode ser jogado uma vez (a pontuação máxima é 500 = 100% nos 5 jogos). No modo <strong>Apenas Conhecer</strong> você explora os jogos livremente, sem cronômetro obrigatório e sem contar pontos.</p>' : '') +
+    (state.rankingMode === true ? '<p class="mode-hint">Modo Ranking ativo — o cronômetro não pode ser desligado. Para jogar sem contar pontos, mude para "Apenas Conhecer".</p>' : '');
+
   return '' +
     '<div class="toolbar"><button class="btn" onclick="App.goToMap()">« VOLTAR AO MAPA</button></div>' +
     '<div class="lupa-watermark"></div><div class="lupa-handle"></div>' +
     '<h2 style="color:#d9a441;font-family:\'Special Elite\',monospace;text-align:center;">SALA DE DESCANSO DO INVESTIGADOR</h2>' +
     '<p class="landing-intro">Turno da madrugada. A máquina de café quebrou.<br>Revise os arquivos em aberto e cruze os depoimentos antes que os casos esfriem.</p>' +
+    modeRow +
     renderRankPanel() +
     '<div class="timed-toggle-row">' +
     '  <label class="timed-toggle">' +
-    '    <input type="checkbox" ' + (timedOn ? 'checked' : '') + ' onchange="App.toggleTimedMode()">' +
+    '    <input type="checkbox" ' + (timedOn ? 'checked' : '') + ' ' + (state.rankingMode ? 'disabled' : '') + ' onchange="App.toggleTimedMode()">' +
     '    <span class="timed-toggle-slider"></span>' +
     '  </label>' +
-    '  <span>Modo Cronometrado ' + (timedOn ? '(ATIVADO — as rodadas têm tempo limite)' : '(desativado — jogue sem pressa)') + '</span>' +
+    '  <span>Modo Cronometrado ' + (timedOn ? '(ATIVADO — as rodadas têm tempo limite)' : '(desativado — jogue sem pressa)') + (state.rankingMode ? ' — obrigatório no modo Ranking' : '') + '</span>' +
     '</div>' +
     '<div class="activity-cards">' +
-    '  <div class="activity-card" onclick="App.iniciarJogo(\'descubra\')">' +
+    '  <div class="activity-card" onclick="App.requestPlayGame(\'descubra\')">' +
     '    <h3>DESCUBRA A LENDA</h3>' +
     '    <p>Você recebe o depoimento de uma testemunha e pode consultar o Boletim de Ocorrência. Sem abrir os arquivos: adivinhe qual lenda é.</p>' +
-    '    <span class="activity-count">' + countDescubra + ' CASOS</span>' +
+    '    <span class="activity-count">15 CASOS</span>' + doneTag('descubra') +
     '  </div>' +
-    '  <div class="activity-card" onclick="App.iniciarJogoDetetive()">' +
+    '  <div class="activity-card" onclick="App.requestPlayGame(\'detetive\')">' +
     '    <h3>DETETIVE DE ELIMINAÇÃO</h3>' +
     '    <p>Um novo suspeito surge a cada rodada: 6 lendas na sala, só uma é a culpada. Elimine suspeitos com as pistas reveladas e aponte o verdadeiro culpado antes do tempo acabar.</p>' +
-    '    <span class="activity-count">6 RODADAS</span>' +
+    '    <span class="activity-count">6 RODADAS</span>' + doneTag('detetive') +
     '  </div>' +
-    '  <div class="activity-card" onclick="App.iniciarJogoVF()">' +
+    '  <div class="activity-card" onclick="App.requestPlayGame(\'vf\')">' +
     '    <h3>TESTE DE CAMPO</h3>' +
     '    <p>Rajada de afirmações sobre os arquivos: região, classificação de ameaça e trechos do modus operandi. Responda VERDADEIRO ou FALSO o mais rápido possível — sem consultar os dossiês.</p>' +
-    '    <span class="activity-count">10 RODADAS</span>' +
+    '    <span class="activity-count">10 RODADAS</span>' + doneTag('vf') +
     '  </div>' +
-    '  <div class="activity-card" onclick="App.iniciarJogoAssocie()">' +
+    '  <div class="activity-card" onclick="App.requestPlayGame(\'associe\')">' +
     '    <h3>MAPEAMENTO DE CAMPO</h3>' +
     '    <p>Você recebe 4 lendas embaralhadas e precisa associar cada uma à sua região correta no mapa antes que a rodada expire.</p>' +
-    '    <span class="activity-count">' + Math.ceil(db.length / 4) + ' RODADAS</span>' +
+    '    <span class="activity-count">' + Math.ceil(db.length / 4) + ' RODADAS</span>' + doneTag('associe') +
     '  </div>' +
-    '  <div class="activity-card" onclick="App.iniciarJogoRV()">' +
+    '  <div class="activity-card" onclick="App.requestPlayGame(\'rv\')">' +
     '    <h3>RECONHECIMENTO VISUAL</h3>' +
     '    <p>O retrato forense de uma lenda aparece na tela. Reconheça o rosto e escolha o nome certo entre as opções antes do tempo esgotar.</p>' +
-    '    <span class="activity-count">10 RODADAS</span>' +
+    '    <span class="activity-count">10 RODADAS</span>' + doneTag('rv') +
+    '  </div>' +
+    '</div>';
+}
+
+function renderGameGate() {
+  var mode = state.gameGateMode;
+  var gameLabel = state.pendingGameLaunch ? (GAME_LABELS[state.pendingGameLaunch] || '') : '';
+  var gameLine = gameLabel ? '  <p class="gate-game-line">Você está prestes a iniciar: <strong>' + App.esc(gameLabel) + '</strong></p>' : '';
+  if (mode === 'confirm') {
+    return '' +
+      '<div class="game-gate">' +
+      '  <h2>CONFIRMAÇÃO DE INVESTIGADOR</h2>' +
+      gameLine +
+      '  <p class="gate-current">Continuar jogando como <strong>' + App.esc(state.playerName) + '</strong>' + (App.currentPlayerSala() ? ' — <strong>' + App.esc(App.currentPlayerSala()) + '</strong>' : '') + '?</p>' +
+      '  <div class="gate-actions">' +
+      '    <button class="btn" onclick="App.confirmSameGatePlayer()">SIM, SOU EU</button>' +
+      '    <button class="btn btn-outline" onclick="App.startGateSwitch()">TROCAR DE INVESTIGADOR</button>' +
+      '    <button class="btn btn-outline" onclick="App.cancelGate()">CANCELAR</button>' +
+      '  </div>' +
+      '</div>';
+  }
+  var salaOptions = SALAS.map(function (s) { return '<option value="' + s + '"' + (state.gateSalaInput === s ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+  return '' +
+    '<div class="game-gate">' +
+    '  <h2>' + (mode === 'switch' ? 'TROCAR DE INVESTIGADOR' : 'IDENTIFICAÇÃO DO INVESTIGADOR') + '</h2>' +
+    gameLine +
+    '  <p class="gate-hint">Informe seu nome e sua sala para entrar no ranking da escola.</p>' +
+    '  <input type="text" class="player-name-input" placeholder="Seu nome" maxlength="24" value="' + App.esc(state.gateNameInput) + '" oninput="App.onGateNameInput(this.value)">' +
+    '  <select class="gate-sala-select" onchange="App.onGateSalaInput(this.value)">' +
+    '    <option value="">Selecione sua sala</option>' + salaOptions +
+    '  </select>' +
+    '  <div class="gate-actions">' +
+    '    <button class="btn" onclick="App.confirmGateRegister()">CONFIRMAR</button>' +
+    (state.playerName ? '    <button class="btn btn-outline" onclick="App.cancelGate()">CANCELAR</button>' : '') +
     '  </div>' +
     '</div>';
 }
 
 function renderPointsGainedLine() {
-  if (state.playerName && state.lastPointsGain) {
-    return '<p class="score">+' + state.lastPointsGain + ' ponto' + (state.lastPointsGain === 1 ? '' : 's') + ' para ' + App.esc(state.playerName) + '!</p>';
+  if (state.lastGamePercent === null) return '';
+  var label = GAME_LABELS[state.lastGameKey] || 'jogo';
+  if (!state.rankingMode) {
+    return '<p class="score-note">Modo "Apenas Conhecer" — aproveitamento de ' + state.lastGamePercent + '% em ' + App.esc(label) + ', sem contar para o ranking.</p>';
   }
-  if (!state.playerName && state.pendingPoints) {
-    return '' +
-      '<div class="points-claim">' +
-      '  <p>Você fez <strong>' + state.pendingPoints + ' ponto' + (state.pendingPoints === 1 ? '' : 's') + '</strong> nesta atividade! Informe seu nome para entrar no ranking da turma e guardar sua pontuação:</p>' +
-      '  <input type="text" class="player-name-input" placeholder="Seu nome" maxlength="24" value="' + App.esc(state.playerNameInput) + '" ' +
-      '    oninput="App.onPlayerNameInput(this.value)" onkeydown="if(event.key===\'Enter\')App.claimPendingPoints(state.playerNameInput)">' +
-      '  <button class="btn btn-sm" onclick="App.claimPendingPoints(state.playerNameInput)">SALVAR PONTUAÇÃO</button>' +
-      '</div>';
+  if (!state.playerName) return '';
+  if (state.lastGameAlreadyCounted) {
+    return '<p class="score-note">Você já tinha jogado "' + App.esc(label) + '" no modo Ranking antes — este resultado (' + state.lastGamePercent + '%) não foi contabilizado de novo.</p>';
   }
-  return '';
+  return '<p class="score">+' + state.lastGamePercent + '% em ' + App.esc(label) + ' para ' + App.esc(state.playerName) + ' — ' + App.getPoints() + '/500 no ranking!</p>';
 }
 
 function renderTimerBar() {
