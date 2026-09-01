@@ -380,6 +380,22 @@ p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px
 .gate-sala-select:focus{outline:none;border-color:var(--amber);}
 .gate-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 
+/* ===== Combinação de Pistas (jogo de emojis) ===== */
+.emoji-display{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:10px 0 26px;padding:24px;background:#0d0d0d;border:1px solid #444;}
+.emoji-piece{font-size:3em;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+.emoji-plus{color:var(--text-muted);font-size:1.6em;}
+
+/* ===== Montagem de Caso (investigação interativa) ===== */
+.caso-sources-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:18px 0;}
+.caso-source-card{background:#0d0d0d;border:1px solid #444;padding:16px;text-align:left;font-family:inherit;color:#ccc;cursor:pointer;transition:.18s;display:block;width:100%;box-sizing:border-box;}
+.caso-source-card:hover:not(:disabled){border-color:var(--amber);box-shadow:0 0 12px rgba(217,164,65,.25);}
+.caso-source-card:disabled{cursor:default;opacity:.6;}
+.caso-source-card.aberto{cursor:default;border-color:#7fbf6a;background:rgba(127,191,106,.08);}
+.caso-source-label{color:var(--amber);font-family:'Special Elite',monospace;font-size:.9em;margin-bottom:8px;}
+.caso-source-card.aberto .caso-source-label{color:#9fdf8a;}
+.caso-source-hint{color:var(--text-muted);font-size:.78em;}
+.caso-source-texto{color:#ddd;font-size:.88em;line-height:1.5;}
+
 </style>
 </head>
 <body>
@@ -479,9 +495,9 @@ var SENHA_ACESSO = 'Ephim';
 var SENHA_ADMIN = 'Folclore';
 
 /* Patentes do S.I.I.F — ranking local (localStorage), por jogador. Pontuação de cada jogador é a
-   soma do aproveitamento (0-100%) obtido em cada um dos 5 jogos, contado uma única vez por jogo —
-   por isso a pontuação máxima possível é 500 (100% em todos os 5 jogos). */
-var PONTOS_POR_PATENTE = 50;
+   soma do aproveitamento (0-100%) obtido em cada um dos 7 jogos, contado uma única vez por jogo —
+   por isso a pontuação máxima possível é 700 (100% em todos os 7 jogos). */
+var PONTOS_POR_PATENTE = 70;
 var RANK_TIERS = [
   { title: 'Investigador por Hobby', min: 0 * PONTOS_POR_PATENTE },
   { title: 'Auxiliar de Campo', min: 1 * PONTOS_POR_PATENTE },
@@ -498,9 +514,48 @@ var RANK_TIERS = [
 /* Salas da escola — usadas no cadastro do investigador (jogadores da escola inteira). */
 var SALAS = ['6ºA', '6ºB', '6ºC', '7ºA', '7ºB', '7ºC', '8ºA', '8ºB', '8ºC', '8ºD', '8ºE', '9ºA', '9ºB', '9ºC', '9ºD', '9ºE'];
 
-/* Os 5 jogos de atividade: chave interna -> rótulo exibido e nº de rodadas (usado para calcular
+/* Os 7 jogos de atividade: chave interna -> rótulo exibido e nº de rodadas (usado para calcular
    o aproveitamento em % de cada jogo no ranking). Cada jogo só conta 1x por investigador. */
-var GAME_LABELS = { descubra: 'Descubra a Lenda', vf: 'Teste de Campo', associe: 'Mapeamento de Campo', detetive: 'Detetive de Eliminação', rv: 'Reconhecimento Visual' };
+var GAME_LABELS = { descubra: 'Descubra a Lenda', vf: 'Teste de Campo', associe: 'Mapeamento de Campo', detetive: 'Detetive de Eliminação', rv: 'Reconhecimento Visual', emoji: 'Combinação de Pistas', caso: 'Montagem de Caso' };
+
+/* ---------- Combinação de Pistas (jogo de emojis) ----------
+   Para cada lenda (por id), um conjunto de 3 emojis que representam seus elementos/traços
+   marcantes — o jogador precisa combiná-los mentalmente e apontar a lenda correspondente. */
+var EMOJI_COMBOS = {
+  '001': ['🧓', '🚬', '🦉'],
+  '002': ['🔥', '🪙', '⛏️'],
+  '003': ['🦥', '👁️', '🌳'],
+  '004': ['🦌', '🔥', '👁️'],
+  '005': ['🐗', '🕳️', '🍖'],
+  '006': ['🧕', '🐦', '🌃'],
+  '007': ['🐊', '🧙‍♀️', '🌙'],
+  '008': ['🐺', '🌕', '🌃'],
+  '009': ['👣', '🔴', '🌲'],
+  '010': ['🐾', '🌲', '💀'],
+  '011': ['🐎', '🙏', '✨'],
+  '012': ['🐬', '🕺', '🌅'],
+  '013': ['💀', '🌳', '⚰️'],
+  '014': ['🌸', '🌊', '🌙'],
+  '015': ['🐍', '🌊', '🛶'],
+  '016': ['🐦', '🎶', '🍀'],
+  '017': ['🧜‍♂️', '🌊', '💀'],
+  '018': ['👵', '🌿', '✨'],
+  '019': ['🖤', '🧥', '👶'],
+  '020': ['🔥', '🐍', '🌾'],
+  '021': ['🌪️', '🚬', '🔴'],
+  '022': ['🐴', '🔥', '👻'],
+  '023': ['🐉', '🔥', '⚡'],
+  '024': ['🎣', '🌊', '🛡️'],
+  '025': ['👰', '🛣️', '🚗'],
+  '026': ['🐗', '🌲', '🚬'],
+  '027': ['🦷', '🪙', '👄'],
+  '028': ['🧜‍♀️', '🪞', '🌊'],
+  '029': ['🐐', '🔥', '🌙'],
+  '030': ['👣', '🌙', '😱'],
+  '031': ['👑', '💎', '🏰'],
+  '032': ['👹', '🌑', '👶'],
+  '033': ['🔪', '🌃', '😱'],
+};
 
 var state = {
   screen: 'gate',
@@ -527,6 +582,13 @@ var state = {
 
   /* Reconhecimento Visual */
   rvIndex: 0, rvTotal: 10, rvScore: 0, rvFinished: false, rvCurrent: null, rvFeedback: '', rvFeedbackOk: null, rvUsedIds: [],
+
+  /* Combinação de Pistas (emojis) */
+  cbIndex: 0, cbTotal: 12, cbScore: 0, cbFinished: false, cbCurrent: null, cbFeedback: '', cbFeedbackOk: null, cbUsedIds: [],
+
+  /* Montagem de Caso (investigação interativa) */
+  mcIndex: 0, mcTotal: 6, mcScore: 0, mcFinished: false, mcUsedIds: [], mcCase: null, mcOptions: [],
+  mcGuessMode: false, mcFeedback: '', mcFeedbackOk: null, mcRoundOver: false,
 
   /* Modo cronometrado (global) */
   timedMode: false, timeLeft: 0, timeTotal: 0,
@@ -627,9 +689,9 @@ var App = {
   /* ---------- Ranking multiplayer (persistido em localStorage) ----------
      Cada jogador é guardado como { points, sala, games: { <chave>: {done,percent} | null } }.
      "points" é sempre a soma dos "percent" dos jogos já concluídos (cada jogo só é contado 1x),
-     então o máximo possível (500) só é atingido fazendo 100% nos 5 jogos, sem repetir nenhum. */
+     então o máximo possível (700) só é atingido fazendo 100% nos 7 jogos, sem repetir nenhum. */
   newPlayerRecord: function (sala) {
-    return { points: 0, sala: sala || '', games: { descubra: null, vf: null, associe: null, detetive: null, rv: null } };
+    return { points: 0, sala: sala || '', games: { descubra: null, vf: null, associe: null, detetive: null, rv: null, emoji: null, caso: null } };
   },
   getPlayers: function () {
     try {
@@ -643,7 +705,11 @@ var App = {
           obj[name] = App.newPlayerRecord('');
           obj[name].points = pts;
         } else if (obj[name] && !obj[name].games) {
-          obj[name].games = { descubra: null, vf: null, associe: null, detetive: null, rv: null };
+          obj[name].games = { descubra: null, vf: null, associe: null, detetive: null, rv: null, emoji: null, caso: null };
+        } else if (obj[name] && obj[name].games) {
+          /* migração: jogadores salvos antes da adição dos jogos "emoji"/"caso" */
+          if (obj[name].games.emoji === undefined) obj[name].games.emoji = null;
+          if (obj[name].games.caso === undefined) obj[name].games.caso = null;
         }
       });
       return obj;
@@ -722,13 +788,15 @@ var App = {
   /* ---------- Portal de identificação do investigador ----------
      Aberto (a) ao clicar em qualquer jogo pela primeira vez ("registrar"), (b) a cada novo jogo
      para confirmar se é o mesmo investigador ("confirm"), ou (c) ao pedir para trocar ("switch"). */
-  GAME_ORDER: ['descubra', 'vf', 'associe', 'detetive', 'rv'],
+  GAME_ORDER: ['descubra', 'vf', 'associe', 'detetive', 'rv', 'emoji', 'caso'],
   launchGameByKey: function (key) {
     if (key === 'descubra') App.iniciarJogo('descubra');
     else if (key === 'vf') App.iniciarJogoVF();
     else if (key === 'associe') App.iniciarJogoAssocie();
     else if (key === 'detetive') App.iniciarJogoDetetive();
     else if (key === 'rv') App.iniciarJogoRV();
+    else if (key === 'emoji') App.iniciarJogoEmoji();
+    else if (key === 'caso') App.iniciarJogoCaso();
   },
   requestPlayGame: function (key) {
     if (!state.rankingMode) { App.launchGameByKey(key); return; }
@@ -1382,6 +1450,159 @@ var App = {
     state.screen = 'activities'; App.render();
   },
 
+  /* ---------- Combinação de Pistas (emojis) ----------
+     3 emojis representam os elementos/traços marcantes de uma lenda; o jogador combina
+     mentalmente as pistas visuais e aponta o nome correto entre 4 opções. */
+  iniciarJogoEmoji: function () {
+    state.screen = 'gameemoji';
+    state.cbIndex = 0; state.cbTotal = 12; state.cbScore = 0; state.cbFinished = false; state.cbUsedIds = [];
+    App.buildEmojiRound();
+    App.render();
+  },
+  buildEmojiRound: function () {
+    var db = App.db().filter(function (c) { return !!EMOJI_COMBOS[c.id]; });
+    var disponiveis = db.filter(function (c) { return state.cbUsedIds.indexOf(c.id) === -1; });
+    if (!disponiveis.length) disponiveis = db;
+    var alvo = App.embaralhar(disponiveis)[0];
+    state.cbUsedIds.push(alvo.id);
+    var outros = App.embaralhar(db.filter(function (c) { return c.id !== alvo.id; })).slice(0, 3);
+    var opcoes = App.embaralhar([alvo].concat(outros));
+    state.cbCurrent = { alvoId: alvo.id, emojis: EMOJI_COMBOS[alvo.id], opcoes: opcoes };
+    state.cbFeedback = ''; state.cbFeedbackOk = null;
+    App.render();
+    App.startTimer(20, function () { App.answerEmoji(''); });
+  },
+  answerEmoji: function (guessId) {
+    if (!state.cbCurrent || state.cbFeedback) return;
+    App.stopTimer();
+    var acertou = guessId === state.cbCurrent.alvoId;
+    var nomeAlvo = state.cbCurrent.opcoes.filter(function (o) { return o.id === state.cbCurrent.alvoId; })[0];
+    state.cbCurrent.guessId = guessId;
+    if (acertou) { state.cbScore++; state.cbFeedback = '✔ Correto! Era ' + (nomeAlvo ? nomeAlvo.nome : '') + '.'; state.cbFeedbackOk = true; }
+    else { state.cbFeedback = '✘ Errado — era ' + (nomeAlvo ? nomeAlvo.nome : '') + '.'; state.cbFeedbackOk = false; }
+    App.render();
+    setTimeout(function () { App.nextEmoji(); }, 1400);
+  },
+  nextEmoji: function () {
+    var next = state.cbIndex + 1;
+    if (next >= state.cbTotal) { state.cbFinished = true; App.finishGameRanking('emoji', state.cbScore, state.cbTotal); App.render(); }
+    else { state.cbIndex = next; App.buildEmojiRound(); }
+  },
+  exitGameEmoji: function () {
+    if (!window.confirm('Sair agora vai encerrar a combinação de pistas. Sair mesmo assim?')) return;
+    App.stopTimer();
+    state.screen = 'activities'; App.render();
+  },
+
+  /* ---------- Montagem de Caso (investigação interativa) ----------
+     Simula um atendimento real: o investigador recebe uma ocorrência e precisa IR ATRÁS das
+     fontes de informação (evidências físicas, relato da testemunha, registro de ocorrência) antes
+     de poder apontar qual lenda está por trás do caso. Nada é entregue de graça — cada fonte só é
+     revelada quando o jogador clica para consultá-la, e abrir uma fonte reinicia o cronômetro
+     (mesma lógica de "pedir dica" usada em outros jogos). */
+  iniciarJogoCaso: function () {
+    state.screen = 'gamecaso';
+    state.mcIndex = 0; state.mcTotal = 6; state.mcScore = 0; state.mcFinished = false; state.mcUsedIds = [];
+    App.startCasoRound();
+    App.render();
+  },
+  _casoBloco: function (aba, idx) {
+    try {
+      var b = aba.blocos[idx] || aba.blocos[0];
+      return { label: b.label, texto: App.removerTags(b.texto) };
+    } catch (e) { return { label: 'Registro', texto: 'Sem informações adicionais neste arquivo.' }; }
+  },
+  startCasoRound: function () {
+    var db = App.db();
+    var disponiveis = db.filter(function (c) { return state.mcUsedIds.indexOf(c.id) === -1; });
+    if (!disponiveis.length) disponiveis = db;
+    var alvo = App.embaralhar(disponiveis)[0];
+    state.mcUsedIds.push(alvo.id);
+    var ev1 = App._casoBloco(alvo.abas.entidade, 0);
+    var testemunho = App._casoBloco(alvo.abas.testemunha, 0);
+    var registro = App._casoBloco(alvo.abas.desaparecido, 0);
+    state.mcCase = {
+      alvoId: alvo.id,
+      evidencias: [
+        { label: ev1.label || 'Modus Operandi', texto: ev1.texto, aberto: false },
+        { label: 'Classificação de Ameaça', texto: 'Ameaça registrada: "' + alvo.ameaca + '". Anotação do perito: "' + (alvo.nota_detetive || 'sem anotações adicionais') + '"', aberto: false },
+      ],
+      testemunho: { label: testemunho.label || 'Relato da Testemunha', texto: testemunho.texto, aberto: false },
+      registro: { label: registro.label || 'Registro de Ocorrência', texto: registro.texto, aberto: false },
+    };
+    var decoys = App.embaralhar(db.filter(function (c) { return c.id !== alvo.id; })).slice(0, 5);
+    state.mcOptions = App.embaralhar(decoys.concat([alvo])).map(function (c) { return { id: c.id, nome: c.nome }; });
+    state.mcGuessMode = false; state.mcRoundOver = false;
+    state.mcFeedback = ''; state.mcFeedbackOk = null;
+    App.render();
+    App.startTimer(60, function () { App.confirmGuessCaso(null); });
+  },
+  _casoFontesAbertas: function () {
+    if (!state.mcCase) return 0;
+    var n = 0;
+    state.mcCase.evidencias.forEach(function (e) { if (e.aberto) n++; });
+    if (state.mcCase.testemunho.aberto) n++;
+    if (state.mcCase.registro.aberto) n++;
+    return n;
+  },
+  abrirEvidenciaCaso: function (idx) {
+    if (!state.mcCase || state.mcRoundOver) return;
+    state.mcCase.evidencias[idx].aberto = true;
+    App.render();
+    App.startTimer(60, function () { App.confirmGuessCaso(null); });
+  },
+  abrirTestemunhoCaso: function () {
+    if (!state.mcCase || state.mcRoundOver) return;
+    state.mcCase.testemunho.aberto = true;
+    App.render();
+    App.startTimer(60, function () { App.confirmGuessCaso(null); });
+  },
+  abrirRegistroCaso: function () {
+    if (!state.mcCase || state.mcRoundOver) return;
+    state.mcCase.registro.aberto = true;
+    App.render();
+    App.startTimer(60, function () { App.confirmGuessCaso(null); });
+  },
+  toggleGuessModeCaso: function () {
+    if (!state.mcCase || state.mcRoundOver) return;
+    if (App._casoFontesAbertas() === 0) {
+      window.alert('Investigue pelo menos uma fonte (evidências, testemunha ou registro de ocorrência) antes de apontar uma lenda.');
+      return;
+    }
+    state.mcGuessMode = !state.mcGuessMode;
+    App.render();
+  },
+  confirmGuessCaso: function (id) {
+    if (!state.mcCase || state.mcRoundOver) return;
+    App.stopTimer();
+    state.mcRoundOver = true;
+    var acertou = id === state.mcCase.alvoId;
+    var nomeAlvo = state.mcOptions.filter(function (o) { return o.id === state.mcCase.alvoId; })[0];
+    if (acertou) {
+      state.mcScore++;
+      state.mcFeedback = '✔ Caso resolvido! Era mesmo ' + (nomeAlvo ? nomeAlvo.nome : '') + '. Ocorrência encerrada com ' + App._casoFontesAbertas() + ' fonte(s) consultada(s).';
+      state.mcFeedbackOk = true;
+    } else if (id === null) {
+      state.mcFeedback = '✘ Tempo esgotado sem identificação. Era ' + (nomeAlvo ? nomeAlvo.nome : '') + '.';
+      state.mcFeedbackOk = false;
+    } else {
+      state.mcFeedback = '✘ Identificação incorreta. Era ' + (nomeAlvo ? nomeAlvo.nome : '') + '.';
+      state.mcFeedbackOk = false;
+    }
+    App.render();
+    setTimeout(function () { App.nextCaso(); }, 2200);
+  },
+  nextCaso: function () {
+    var next = state.mcIndex + 1;
+    if (next >= state.mcTotal) { state.mcFinished = true; App.finishGameRanking('caso', state.mcScore, state.mcTotal); App.render(); }
+    else { state.mcIndex = next; App.startCasoRound(); }
+  },
+  exitGameCaso: function () {
+    if (!window.confirm('Sair agora vai encerrar o atendimento da ocorrência. Sair mesmo assim?')) return;
+    App.stopTimer();
+    state.screen = 'activities'; App.render();
+  },
+
   /* ---------- ciclo de vida ---------- */
   _clockTimer: null,
   init: function () {
@@ -1509,8 +1730,9 @@ function renderChrome() {
   var isMap = state.screen === 'map', isFiles = state.screen === 'files', isDossier = state.screen === 'dossier',
       isActivities = state.screen === 'activities', isGame = state.screen === 'game',
       isGameVF = state.screen === 'gamevf', isGameAssocie = state.screen === 'gameassocie',
-      isGameDet = state.screen === 'gamedet', isGameRV = state.screen === 'gamerv';
-  var isAnyGame = isGame || isGameVF || isGameAssocie || isGameDet || isGameRV;
+      isGameDet = state.screen === 'gamedet', isGameRV = state.screen === 'gamerv',
+      isGameEmoji = state.screen === 'gameemoji', isGameCaso = state.screen === 'gamecaso';
+  var isAnyGame = isGame || isGameVF || isGameAssocie || isGameDet || isGameRV || isGameEmoji || isGameCaso;
 
   var navItems = [
     { key: 'mapa', label: 'MAPA INICIAL', active: isMap, fn: 'App.goToMap()' },
@@ -1532,6 +1754,8 @@ function renderChrome() {
   else if (isGameAssocie) content = renderGameAssocie();
   else if (isGameDet) content = renderGameDetetive();
   else if (isGameRV) content = renderGameRV();
+  else if (isGameEmoji) content = renderGameEmoji();
+  else if (isGameCaso) content = renderGameCaso();
 
   var tapeTop = '⚠ CENA DE INVESTIGAÇÃO — NÃO ULTRAPASSE ⚠ ACESSO RESTRITO — NÍVEL 4 ⚠ CENA DE INVESTIGAÇÃO — NÃO ULTRAPASSE ⚠ ACESSO RESTRITO — NÍVEL 4 ⚠&nbsp;';
   var tapeBottom = '⚠ S.I.I.F — DIVISÃO DE OCORRÊNCIAS PARANORMAIS E CULTURAIS ⚠ ARQUIVO CONFIDENCIAL ⚠ S.I.I.F — DIVISÃO DE OCORRÊNCIAS PARANORMAIS E CULTURAIS ⚠ ARQUIVO CONFIDENCIAL ⚠&nbsp;';
@@ -1767,7 +1991,7 @@ function renderRankPanel() {
       '  <div class="rank-current-badge">🏅</div>' +
       '  <div>' +
       '    <div class="rank-current-title">' + App.esc(state.playerName) + (App.currentPlayerSala() ? ' (' + App.esc(App.currentPlayerSala()) + ')' : '') + ' — ' + App.esc(atual.title) + '</div>' +
-      '    <div class="rank-current-xp">' + rank.points + ' / 500 pontos' + (proxima ? ' — faltam ' + (proxima.min - rank.points) + ' para ' + App.esc(proxima.title) : ' — patente máxima atingida!') + '</div>' +
+      '    <div class="rank-current-xp">' + rank.points + ' / 700 pontos' + (proxima ? ' — faltam ' + (proxima.min - rank.points) + ' para ' + App.esc(proxima.title) : ' — patente máxima atingida!') + '</div>' +
       '    <div class="rank-progress-bar"><div class="rank-progress-fill" style="width:' + pct + '%"></div></div>' +
       '  </div>' +
       '</div>';
@@ -1823,7 +2047,7 @@ function renderActivities() {
     '  <button class="mode-btn' + (state.rankingMode === true ? ' active' : '') + '" onclick="App.setRankingMode(true)">🏆 JOGAR POR RANKING</button>' +
     '  <button class="mode-btn' + (state.rankingMode === false ? ' active' : '') + '" onclick="App.setRankingMode(false)">👀 APENAS CONHECER</button>' +
     '</div>' +
-    (state.rankingMode === null ? '<p class="mode-hint">Escolha um modo para jogar: no modo <strong>Ranking</strong> o cronômetro fica sempre ativo, é preciso informar nome e sala, e cada jogo só pode ser jogado uma vez (a pontuação máxima é 500 = 100% nos 5 jogos). No modo <strong>Apenas Conhecer</strong> você explora os jogos livremente, sem cronômetro obrigatório e sem contar pontos.</p>' : '') +
+    (state.rankingMode === null ? '<p class="mode-hint">Escolha um modo para jogar: no modo <strong>Ranking</strong> o cronômetro fica sempre ativo, é preciso informar nome e sala, e cada jogo só pode ser jogado uma vez (a pontuação máxima é 700 = 100% nos 7 jogos). No modo <strong>Apenas Conhecer</strong> você explora os jogos livremente, sem cronômetro obrigatório e sem contar pontos.</p>' : '') +
     (state.rankingMode === true ? '<p class="mode-hint">Modo Ranking ativo — o cronômetro não pode ser desligado. Para jogar sem contar pontos, mude para "Apenas Conhecer".</p>' : '');
 
   return '' +
@@ -1865,6 +2089,16 @@ function renderActivities() {
     '    <h3>RECONHECIMENTO VISUAL</h3>' +
     '    <p>O retrato forense de uma lenda aparece na tela. Reconheça o rosto e escolha o nome certo entre as opções antes do tempo esgotar.</p>' +
     '    <span class="activity-count">10 RODADAS</span>' + doneTag('rv') +
+    '  </div>' +
+    '  <div class="activity-card" onclick="App.requestPlayGame(\'emoji\')">' +
+    '    <h3>COMBINAÇÃO DE PISTAS</h3>' +
+    '    <p>Três emojis representam os elementos de uma lenda — combine as pistas visuais mentalmente e aponte o nome certo antes do tempo acabar.</p>' +
+    '    <span class="activity-count">12 RODADAS</span>' + doneTag('emoji') +
+    '  </div>' +
+    '  <div class="activity-card" onclick="App.requestPlayGame(\'caso\')">' +
+    '    <h3>MONTAGEM DE CASO</h3>' +
+    '    <p>Simule um atendimento real: vá atrás das evidências, do relato da testemunha e do registro de ocorrência antes de identificar qual lenda está por trás do caso.</p>' +
+    '    <span class="activity-count">6 OCORRÊNCIAS</span>' + doneTag('caso') +
     '  </div>' +
     '</div>';
 }
@@ -1913,7 +2147,7 @@ function renderPointsGainedLine() {
   if (state.lastGameAlreadyCounted) {
     return '<p class="score-note">Você já tinha jogado "' + App.esc(label) + '" no modo Ranking antes — este resultado (' + state.lastGamePercent + '%) não foi contabilizado de novo.</p>';
   }
-  return '<p class="score">+' + state.lastGamePercent + '% em ' + App.esc(label) + ' para ' + App.esc(state.playerName) + ' — ' + App.getPoints() + '/500 no ranking!</p>';
+  return '<p class="score">+' + state.lastGamePercent + '% em ' + App.esc(label) + ' para ' + App.esc(state.playerName) + ' — ' + App.getPoints() + '/700 no ranking!</p>';
 }
 
 function renderTimerBar() {
@@ -2117,6 +2351,106 @@ function renderGameRV() {
     '  <div class="rv-photo-frame"><img src="' + App.esc(c.foto || '') + '" alt="Retrato forense" decoding="async" onerror="this.parentNode.classList.add(\'slot-broken\')"></div>' +
     '  <div class="rv-options">' + optionsHtml + '</div>' +
     '  <div class="game-feedback' + feedbackClass + '">' + App.esc(state.rvFeedback) + '</div>' +
+    '</div>';
+}
+
+function renderGameEmoji() {
+  var exitBtn = '<div class="toolbar"><button class="btn" onclick="App.exitGameEmoji()">« ABANDONAR COMBINAÇÃO</button></div>';
+  if (state.cbFinished) {
+    return exitBtn +
+      '<div class="game-summary">' +
+      '  <h2>COMBINAÇÃO DE PISTAS ENCERRADA</h2>' +
+      '  <p>Você combinou corretamente ' + state.cbScore + ' de ' + state.cbTotal + ' conjuntos de pistas.</p>' +
+      '  <p class="score">Aproveitamento: ' + Math.round((state.cbScore / state.cbTotal) * 100) + '%</p>' +
+      renderPointsGainedLine() +
+      '  <button class="btn" style="margin-top:14px;" onclick="App.goToActivities()">VOLTAR ÀS ATIVIDADES</button>' +
+      '</div>';
+  }
+  var c = state.cbCurrent;
+  if (!c) return exitBtn + '<p>Carregando rodada...</p>';
+  var answered = state.cbFeedback !== '';
+  var emojisHtml = c.emojis.map(function (e) { return '<span class="emoji-piece">' + e + '</span>'; }).join('<span class="emoji-plus">+</span>');
+  var optionsHtml = c.opcoes.map(function (o) {
+    var isGuess = c.guessId === o.id;
+    var isTarget = o.id === c.alvoId;
+    var cls = 'rv-option';
+    if (answered) {
+      if (isTarget) cls += ' correct';
+      else if (isGuess) cls += ' wrong';
+    }
+    return '<button class="' + cls + '" ' + (answered ? 'disabled' : '') + ' onclick="App.answerEmoji(\'' + o.id + '\')">' + App.esc(o.nome) + '</button>';
+  }).join('');
+  var feedbackClass = state.cbFeedbackOk === true ? ' ok' : state.cbFeedbackOk === false ? ' fail' : '';
+  return exitBtn +
+    '<div class="game-progress">Combinação ' + (state.cbIndex + 1) + ' de ' + state.cbTotal + ' — Acertos: ' + state.cbScore + '</div>' +
+    renderTimerBar() +
+    '<div class="game-board">' +
+    '  <div class="game-header"><h2>COMBINAÇÃO DE PISTAS</h2></div>' +
+    '  <div class="game-warning" style="background:rgba(0,0,0,.3);border-color:#444;color:#ccc;">Combine mentalmente os elementos abaixo e aponte a lenda correspondente.</div>' +
+    '  <div class="emoji-display">' + emojisHtml + '</div>' +
+    '  <div class="rv-options">' + optionsHtml + '</div>' +
+    '  <div class="game-feedback' + feedbackClass + '">' + App.esc(state.cbFeedback) + '</div>' +
+    '</div>';
+}
+
+function renderGameCaso() {
+  var exitBtn = '<div class="toolbar"><button class="btn" onclick="App.exitGameCaso()">« ABANDONAR OCORRÊNCIA</button></div>';
+  if (state.mcFinished) {
+    return exitBtn +
+      '<div class="game-summary">' +
+      '  <h2>PLANTÃO DE OCORRÊNCIAS ENCERRADO</h2>' +
+      '  <p>Você identificou corretamente ' + state.mcScore + ' de ' + state.mcTotal + ' ocorrências atendidas.</p>' +
+      '  <p class="score">Aproveitamento: ' + Math.round((state.mcScore / state.mcTotal) * 100) + '%</p>' +
+      renderPointsGainedLine() +
+      '  <button class="btn" style="margin-top:14px;" onclick="App.goToActivities()">VOLTAR ÀS ATIVIDADES</button>' +
+      '</div>';
+  }
+  var c = state.mcCase;
+  if (!c) return exitBtn + '<p>Carregando ocorrência...</p>';
+
+  var sourceCard = function (label, icon, item, onclick) {
+    var cls = 'caso-source-card' + (item.aberto ? ' aberto' : '');
+    if (item.aberto) {
+      return '<div class="' + cls + '"><div class="caso-source-label">' + icon + ' ' + App.esc(item.label || label) + '</div><div class="caso-source-texto">' + App.esc(item.texto) + '</div></div>';
+    }
+    return '<button class="' + cls + '" ' + (state.mcRoundOver ? 'disabled' : '') + ' onclick="' + onclick + '"><div class="caso-source-label">' + icon + ' ' + App.esc(label) + '</div><div class="caso-source-hint">Clique para investigar esta fonte</div></button>';
+  };
+
+  var fontesHtml = '' +
+    sourceCard('Evidências Físicas', '🔎', c.evidencias[0], "App.abrirEvidenciaCaso(0)") +
+    sourceCard('Análise de Ameaça', '🗂️', c.evidencias[1], "App.abrirEvidenciaCaso(1)") +
+    sourceCard('Relato da Testemunha', '🗣️', c.testemunho, "App.abrirTestemunhoCaso()") +
+    sourceCard('Registro de Ocorrência (B.O.)', '📄', c.registro, "App.abrirRegistroCaso()");
+
+  var fontesAbertas = App._casoFontesAbertas();
+  var guessHtml = '';
+  if (state.mcGuessMode) {
+    var suspeitosHtml = state.mcOptions.map(function (o) {
+      var cls = 'suspect-card' + (state.mcRoundOver && o.id === c.alvoId ? ' revealed-target' : '');
+      return '' +
+        '<div class="' + cls + '">' +
+        '  <div class="suspect-name">' + App.esc(o.nome) + '</div>' +
+        '  <div class="suspect-actions">' +
+        '    <button class="btn btn-sm btn-accuse" ' + (state.mcRoundOver ? 'disabled' : '') + ' onclick="App.confirmGuessCaso(\'' + o.id + '\')">É ESSA LENDA</button>' +
+        '  </div>' +
+        '</div>';
+    }).join('');
+    guessHtml = '<div class="suspect-grid">' + suspeitosHtml + '</div>';
+  }
+
+  var feedbackClass = state.mcFeedbackOk === true ? ' ok' : state.mcFeedbackOk === false ? ' fail' : '';
+  return exitBtn +
+    '<div class="game-progress">Ocorrência ' + (state.mcIndex + 1) + ' de ' + state.mcTotal + ' — Casos resolvidos: ' + state.mcScore + '</div>' +
+    renderTimerBar() +
+    '<div class="game-board caso-board">' +
+    '  <div class="game-header"><h2>MONTAGEM DE CASO</h2></div>' +
+    '  <div class="game-warning" style="background:rgba(0,0,0,.3);border-color:#444;color:#ccc;">Uma nova ocorrência acaba de chegar. Investigue as fontes disponíveis (não é preciso abrir todas) e, quando tiver pistas suficientes, aponte qual lenda está por trás do caso.</div>' +
+    '  <div class="caso-sources-grid">' + fontesHtml + '</div>' +
+    '  <div class="game-actions" style="text-align:center;margin:16px 0;">' +
+    '    <button class="btn' + (state.mcGuessMode ? ' btn-outline' : '') + '" ' + (state.mcRoundOver ? 'disabled' : '') + ' onclick="App.toggleGuessModeCaso()">' + (state.mcGuessMode ? 'VOLTAR À INVESTIGAÇÃO' : '🔦 IDENTIFICAR A LENDA (' + fontesAbertas + ' fonte(s) consultada(s))') + '</button>' +
+    '  </div>' +
+    guessHtml +
+    '  <div class="game-feedback' + feedbackClass + '">' + App.esc(state.mcFeedback) + '</div>' +
     '</div>';
 }
 
