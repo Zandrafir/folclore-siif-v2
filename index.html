@@ -396,6 +396,30 @@ p.dossier-p{font-size:1.05em;line-height:1.6;text-align:justify;margin:6px 0 4px
 .caso-source-hint{color:var(--text-muted);font-size:.78em;}
 .caso-source-texto{color:#ddd;font-size:.88em;line-height:1.5;}
 
+/* ===== Montagem de Caso — point-and-click ===== */
+.pc-scene{position:relative;width:100%;max-width:900px;margin:0 auto;aspect-ratio:3/2;background-size:cover;background-position:center;border:1px solid #444;box-shadow:0 8px 30px rgba(0,0,0,.6);overflow:hidden;}
+.pc-intro{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:88%;background:rgba(10,10,10,.82);border:1px solid rgba(217,164,65,.5);color:#eee;padding:12px 16px;font-size:.85em;line-height:1.5;text-align:center;z-index:2;}
+.pc-hotspot{position:absolute;transform:translate(-50%,-50%);background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;z-index:1;padding:0;}
+.pc-hotspot-icon{width:40px;height:40px;border-radius:50%;background:rgba(217,164,65,.22);border:2px solid var(--amber);display:flex;align-items:center;justify-content:center;font-size:1.3em;box-shadow:0 0 0 0 rgba(217,164,65,.5);animation:pcPulse 2s infinite;}
+.pc-hotspot-found .pc-hotspot-icon{background:rgba(127,191,106,.22);border-color:#7fbf6a;animation:none;}
+.pc-hotspot-label{display:none;background:rgba(0,0,0,.85);color:#fff;font-size:.72em;padding:3px 8px;border-radius:3px;white-space:nowrap;}
+.pc-hotspot:hover .pc-hotspot-label{display:block;}
+.pc-hotspot:disabled{cursor:default;opacity:.5;}
+@keyframes pcPulse{0%{box-shadow:0 0 0 0 rgba(217,164,65,.5);}70%{box-shadow:0 0 0 12px rgba(217,164,65,0);}100%{box-shadow:0 0 0 0 rgba(217,164,65,0);}}
+.pc-journal{max-width:900px;margin:14px auto 0;background:var(--panel);border:1px solid #333;padding:14px 18px;}
+.pc-journal-title{color:var(--amber);font-family:'Special Elite',monospace;font-size:.9em;margin-bottom:8px;}
+.pc-journal-empty{color:var(--text-muted);font-size:.82em;}
+.pc-journal ul{margin:0;padding-left:18px;color:#ddd;font-size:.85em;line-height:1.7;}
+.pc-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:600;padding:20px;}
+.pc-modal{background:var(--panel);border:1px solid var(--amber);max-width:520px;width:100%;padding:24px;text-align:center;max-height:80vh;overflow-y:auto;}
+.pc-modal-title{color:var(--amber);font-family:'Special Elite',monospace;font-size:1.05em;margin-bottom:14px;}
+.pc-modal-text{color:#ddd;font-size:.9em;line-height:1.6;margin-bottom:18px;text-align:left;}
+.pc-dialogue-questions{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.pc-dialogue-q{background:#1c1c1c;color:#ccc;border:1px solid #444;padding:10px 14px;text-align:left;cursor:pointer;font-family:inherit;font-size:.85em;transition:.18s;}
+.pc-dialogue-q:hover{border-color:var(--amber);}
+.pc-dialogue-q.asked{border-color:#7fbf6a;color:#9fdf8a;}
+.pc-guess .suspect-grid{margin-top:0;}
+
 </style>
 </head>
 <body>
@@ -557,6 +581,64 @@ var EMOJI_COMBOS = {
   '033': ['🔪', '🌃', '😱'],
 };
 
+/* ---------- Montagem de Caso — dados dos cenários (point-and-click) ----------
+   Cada caso tem cenários (cenas) com pontos de interesse clicáveis (hotspots), posicionados em
+   porcentagem sobre a imagem de fundo. Um hotspot pode revelar uma pista (type:'clue'), levar a
+   outro cenário (type:'travel'), abrir um diálogo com uma testemunha (type:'dialogue') ou abrir o
+   painel de acusação final (type:'accuse'). O diálogo é uma pequena árvore de perguntas: cada
+   pergunta clicável revela uma resposta e marca uma pista como encontrada. */
+var PC_CASES = {
+  boiuna: {
+    legendId: '015',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Uma balsa de minério naufragou em pleno trecho de águas calmas do rio, o casco partido ao meio sem explicação plausível. O caso caiu na sua mesa.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Capitania dos Portos',
+            clueText: 'Balsa de minério naufragada em trecho de águas calmas. Casco partido ao meio por força não compatível com colisão ou falha estrutural conhecida.' },
+          { id: 'ir_rio', type: 'travel', x: 78, y: 40, icon: '🌊', label: 'Ir até o local do naufrágio', target: 'rio' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Visitar o mestre do barco (testemunha)', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🔦', label: 'Concluir Investigação' },
+        ],
+      },
+      rio: {
+        label: 'Local do Naufrágio',
+        background: 'cenas/boiuna_rio.jpg',
+        hotspots: [
+          { id: 'agua', type: 'clue', x: 50, y: 62, icon: '💧', label: 'Vestígios na Água',
+            clueId: 'modus_operandi', clueLabel: 'Vestígios na Água',
+            clueText: 'Serpente abissal de porte colossal, com olhos bioluminescentes que se assemelham a faróis de embarcação à distância. Segundo os ribeirinhos, seus movimentos ao se arrastar teriam moldado o próprio curso dos grandes rios amazônicos; simula luzes de navio para atrair e afundar embarcações de carga.' },
+          { id: 'margem', type: 'clue', x: 18, y: 82, icon: '👣', label: 'Marcas na Margem',
+            clueId: 'marcas', clueLabel: 'Marcas no Leito do Rio',
+            clueText: 'Marcas enormes de arrasto no leito do rio, longas demais para qualquer embarcação ou animal conhecido — como se algo colossal tivesse se movido por ali pouco antes do naufrágio.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Visitar o mestre do barco', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Casa do Mestre do Barco',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '🧔', label: 'Conversar com o Mestre do Barco' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que aconteceu na noite do naufrágio?', clueId: 'testemunho', clueLabel: 'Depoimento — o que ele viu',
+              a: '"Pensei que era um navio vindo na contramão, as luzes bem fortes vindo direto pra gente. Quando iluminamos com o holofote, não tinha casco nenhum — eram dois olhos gigantes logo abaixo da superfície, e a água toda tremeu quando ele mergulhou."' },
+            { q: 'Chegou a ver o casco de algum navio?', clueId: 'detalhe_olhos', clueLabel: 'Depoimento — sobre o casco',
+              a: '"Não, não tinha casco nenhum. Só os dois olhos, do tamanho de faróis de embarcação, brilhando debaixo d\'água."' },
+          ],
+        },
+      },
+    },
+  },
+};
+
 var state = {
   screen: 'gate',
   gateInput: '', gateError: '',
@@ -586,9 +668,10 @@ var state = {
   /* Combinação de Pistas (emojis) */
   cbIndex: 0, cbTotal: 12, cbScore: 0, cbFinished: false, cbCurrent: null, cbFeedback: '', cbFeedbackOk: null, cbUsedIds: [],
 
-  /* Montagem de Caso (investigação interativa) */
-  mcIndex: 0, mcTotal: 6, mcScore: 0, mcFinished: false, mcUsedIds: [], mcCase: null, mcOptions: [],
-  mcGuessMode: false, mcFeedback: '', mcFeedbackOk: null, mcRoundOver: false,
+  /* Montagem de Caso (point-and-click de investigação) */
+  mcCaseKey: '', mcLocation: '', mcCluesFound: [], mcOptions: [], mcDialogueNode: null,
+  mcGuessMode: false, mcRoundOver: false, mcFinished: false, mcScore: 0,
+  mcFeedback: '', mcFeedbackOk: null, mcLastClueLabel: '', mcLastClueText: '',
 
   /* Modo cronometrado (global) */
   timedMode: false, timeLeft: 0, timeTotal: 0,
@@ -1494,111 +1577,108 @@ var App = {
     state.screen = 'activities'; App.render();
   },
 
-  /* ---------- Montagem de Caso (investigação interativa) ----------
-     Simula um atendimento real: o investigador recebe uma ocorrência e precisa IR ATRÁS das
-     fontes de informação (evidências físicas, relato da testemunha, registro de ocorrência) antes
-     de poder apontar qual lenda está por trás do caso. Nada é entregue de graça — cada fonte só é
-     revelada quando o jogador clica para consultá-la, e abrir uma fonte reinicia o cronômetro
-     (mesma lógica de "pedir dica" usada em outros jogos). */
+  /* ---------- Montagem de Caso (point-and-click de investigação) ----------
+     Versão visual: o investigador navega entre cenários ilustrados (delegacia, cena do crime,
+     casa da testemunha), clica em pontos de interesse para revelar pistas e conduz um diálogo
+     com a testemunha escolhendo perguntas. Só pode acusar uma lenda depois de ter investigado
+     pelo menos uma pista. Protótipo funcional cobrindo o caso da Boiúna (id 015) — a estrutura de
+     dados (PC_CASES) foi feita para receber novos casos completos no mesmo formato. */
   iniciarJogoCaso: function () {
     state.screen = 'gamecaso';
-    state.mcIndex = 0; state.mcTotal = 6; state.mcScore = 0; state.mcFinished = false; state.mcUsedIds = [];
-    App.startCasoRound();
-    App.render();
-  },
-  _casoBloco: function (aba, idx) {
-    try {
-      var b = aba.blocos[idx] || aba.blocos[0];
-      return { label: b.label, texto: App.removerTags(b.texto) };
-    } catch (e) { return { label: 'Registro', texto: 'Sem informações adicionais neste arquivo.' }; }
-  },
-  startCasoRound: function () {
+    state.mcCaseKey = 'boiuna';
+    var caso = PC_CASES[state.mcCaseKey];
     var db = App.db();
-    var disponiveis = db.filter(function (c) { return state.mcUsedIds.indexOf(c.id) === -1; });
-    if (!disponiveis.length) disponiveis = db;
-    var alvo = App.embaralhar(disponiveis)[0];
-    state.mcUsedIds.push(alvo.id);
-    var ev1 = App._casoBloco(alvo.abas.entidade, 0);
-    var testemunho = App._casoBloco(alvo.abas.testemunha, 0);
-    var registro = App._casoBloco(alvo.abas.desaparecido, 0);
-    state.mcCase = {
-      alvoId: alvo.id,
-      evidencias: [
-        { label: ev1.label || 'Modus Operandi', texto: ev1.texto, aberto: false },
-        { label: 'Classificação de Ameaça', texto: 'Ameaça registrada: "' + alvo.ameaca + '". Anotação do perito: "' + (alvo.nota_detetive || 'sem anotações adicionais') + '"', aberto: false },
-      ],
-      testemunho: { label: testemunho.label || 'Relato da Testemunha', texto: testemunho.texto, aberto: false },
-      registro: { label: registro.label || 'Registro de Ocorrência', texto: registro.texto, aberto: false },
-    };
-    var decoys = App.embaralhar(db.filter(function (c) { return c.id !== alvo.id; })).slice(0, 5);
+    var alvo = db.filter(function (c) { return c.id === caso.legendId; })[0];
+    var decoys = App.embaralhar(db.filter(function (c) { return c.id !== caso.legendId; })).slice(0, 5);
     state.mcOptions = App.embaralhar(decoys.concat([alvo])).map(function (c) { return { id: c.id, nome: c.nome }; });
-    state.mcGuessMode = false; state.mcRoundOver = false;
+    state.mcLocation = caso.startLocation;
+    state.mcCluesFound = [];
+    state.mcDialogueNode = null;
+    state.mcGuessMode = false;
+    state.mcRoundOver = false;
+    state.mcFinished = false;
+    state.mcScore = 0;
     state.mcFeedback = ''; state.mcFeedbackOk = null;
+    state.mcLastClueLabel = ''; state.mcLastClueText = '';
     App.render();
-    App.startTimer(60, function () { App.confirmGuessCaso(null); });
   },
-  _casoFontesAbertas: function () {
-    if (!state.mcCase) return 0;
-    var n = 0;
-    state.mcCase.evidencias.forEach(function (e) { if (e.aberto) n++; });
-    if (state.mcCase.testemunho.aberto) n++;
-    if (state.mcCase.registro.aberto) n++;
-    return n;
+  /* Procura o rótulo de uma pista (clueId) em todos os cenários e diálogos do caso atual — usado
+     para exibir o diário de pistas sem duplicar rótulos em outro lugar. */
+  pcClueLabel: function (clueId) {
+    var caso = PC_CASES[state.mcCaseKey];
+    if (!caso) return clueId;
+    var locs = caso.locations;
+    for (var key in locs) {
+      var loc = locs[key];
+      for (var i = 0; i < loc.hotspots.length; i++) {
+        if (loc.hotspots[i].clueId === clueId) return loc.hotspots[i].clueLabel;
+      }
+      if (loc.dialogue) {
+        for (var dk in loc.dialogue) {
+          for (var j = 0; j < loc.dialogue[dk].length; j++) {
+            if (loc.dialogue[dk][j].clueId === clueId) return loc.dialogue[dk][j].clueLabel;
+          }
+        }
+      }
+    }
+    return clueId;
   },
-  abrirEvidenciaCaso: function (idx) {
-    if (!state.mcCase || state.mcRoundOver) return;
-    state.mcCase.evidencias[idx].aberto = true;
+  pcGoTo: function (locationKey) {
+    if (state.mcRoundOver) return;
+    state.mcLocation = locationKey;
+    state.mcDialogueNode = null;
     App.render();
-    App.startTimer(60, function () { App.confirmGuessCaso(null); });
   },
-  abrirTestemunhoCaso: function () {
-    if (!state.mcCase || state.mcRoundOver) return;
-    state.mcCase.testemunho.aberto = true;
+  pcShowClue: function (clueId, label, texto) {
+    if (state.mcRoundOver) return;
+    if (state.mcCluesFound.indexOf(clueId) === -1) state.mcCluesFound.push(clueId);
+    state.mcLastClueLabel = label;
+    state.mcLastClueText = texto;
     App.render();
-    App.startTimer(60, function () { App.confirmGuessCaso(null); });
   },
-  abrirRegistroCaso: function () {
-    if (!state.mcCase || state.mcRoundOver) return;
-    state.mcCase.registro.aberto = true;
+  pcCloseClue: function () {
+    state.mcLastClueLabel = ''; state.mcLastClueText = '';
     App.render();
-    App.startTimer(60, function () { App.confirmGuessCaso(null); });
+  },
+  pcOpenDialogue: function (nodeKey) {
+    if (state.mcRoundOver) return;
+    state.mcDialogueNode = nodeKey;
+    App.render();
+  },
+  pcAskQuestion: function (clueId, label, texto) {
+    if (state.mcCluesFound.indexOf(clueId) === -1) state.mcCluesFound.push(clueId);
+    state.mcLastClueLabel = label;
+    state.mcLastClueText = texto;
+    App.render();
   },
   toggleGuessModeCaso: function () {
-    if (!state.mcCase || state.mcRoundOver) return;
-    if (App._casoFontesAbertas() === 0) {
-      window.alert('Investigue pelo menos uma fonte (evidências, testemunha ou registro de ocorrência) antes de apontar uma lenda.');
+    if (state.mcRoundOver) return;
+    if (state.mcCluesFound.length === 0) {
+      window.alert('Investigue pelo menos uma pista (cena do crime ou depoimento da testemunha) antes de apontar uma lenda.');
       return;
     }
     state.mcGuessMode = !state.mcGuessMode;
     App.render();
   },
   confirmGuessCaso: function (id) {
-    if (!state.mcCase || state.mcRoundOver) return;
-    App.stopTimer();
+    if (state.mcRoundOver) return;
+    var caso = PC_CASES[state.mcCaseKey];
     state.mcRoundOver = true;
-    var acertou = id === state.mcCase.alvoId;
-    var nomeAlvo = state.mcOptions.filter(function (o) { return o.id === state.mcCase.alvoId; })[0];
+    var acertou = id === caso.legendId;
+    var nomeAlvo = state.mcOptions.filter(function (o) { return o.id === caso.legendId; })[0];
     if (acertou) {
-      state.mcScore++;
-      state.mcFeedback = '✔ Caso resolvido! Era mesmo ' + (nomeAlvo ? nomeAlvo.nome : '') + '. Ocorrência encerrada com ' + App._casoFontesAbertas() + ' fonte(s) consultada(s).';
+      state.mcScore = 1;
+      state.mcFeedback = '✔ Caso resolvido! Era mesmo ' + (nomeAlvo ? nomeAlvo.nome : '') + '. Investigação encerrada com ' + state.mcCluesFound.length + ' pista(s) reunida(s).';
       state.mcFeedbackOk = true;
-    } else if (id === null) {
-      state.mcFeedback = '✘ Tempo esgotado sem identificação. Era ' + (nomeAlvo ? nomeAlvo.nome : '') + '.';
-      state.mcFeedbackOk = false;
     } else {
       state.mcFeedback = '✘ Identificação incorreta. Era ' + (nomeAlvo ? nomeAlvo.nome : '') + '.';
       state.mcFeedbackOk = false;
     }
     App.render();
-    setTimeout(function () { App.nextCaso(); }, 2200);
-  },
-  nextCaso: function () {
-    var next = state.mcIndex + 1;
-    if (next >= state.mcTotal) { state.mcFinished = true; App.finishGameRanking('caso', state.mcScore, state.mcTotal); App.render(); }
-    else { state.mcIndex = next; App.startCasoRound(); }
+    setTimeout(function () { state.mcFinished = true; App.finishGameRanking('caso', state.mcScore, 1); App.render(); }, 2600);
   },
   exitGameCaso: function () {
-    if (!window.confirm('Sair agora vai encerrar o atendimento da ocorrência. Sair mesmo assim?')) return;
+    if (!window.confirm('Sair agora vai encerrar a investigação. Sair mesmo assim?')) return;
     App.stopTimer();
     state.screen = 'activities'; App.render();
   },
@@ -2097,8 +2177,8 @@ function renderActivities() {
     '  </div>' +
     '  <div class="activity-card" onclick="App.requestPlayGame(\'caso\')">' +
     '    <h3>MONTAGEM DE CASO</h3>' +
-    '    <p>Simule um atendimento real: vá atrás das evidências, do relato da testemunha e do registro de ocorrência antes de identificar qual lenda está por trás do caso.</p>' +
-    '    <span class="activity-count">6 OCORRÊNCIAS</span>' + doneTag('caso') +
+    '    <p>Navegue por cenários ilustrados — delegacia, cena do crime, casa da testemunha — clicando nos pontos de interesse para investigar e conversar até identificar a lenda.</p>' +
+    '    <span class="activity-count">INVESTIGAÇÃO VISUAL</span>' + doneTag('caso') +
     '  </div>' +
     '</div>';
 }
@@ -2394,39 +2474,75 @@ function renderGameEmoji() {
 }
 
 function renderGameCaso() {
-  var exitBtn = '<div class="toolbar"><button class="btn" onclick="App.exitGameCaso()">« ABANDONAR OCORRÊNCIA</button></div>';
+  var exitBtn = '<div class="toolbar"><button class="btn" onclick="App.exitGameCaso()">« ABANDONAR INVESTIGAÇÃO</button></div>';
   if (state.mcFinished) {
     return exitBtn +
       '<div class="game-summary">' +
-      '  <h2>PLANTÃO DE OCORRÊNCIAS ENCERRADO</h2>' +
-      '  <p>Você identificou corretamente ' + state.mcScore + ' de ' + state.mcTotal + ' ocorrências atendidas.</p>' +
-      '  <p class="score">Aproveitamento: ' + Math.round((state.mcScore / state.mcTotal) * 100) + '%</p>' +
+      '  <h2>INVESTIGAÇÃO ENCERRADA</h2>' +
+      '  <p>' + (state.mcScore ? 'Você identificou corretamente a lenda por trás da ocorrência.' : 'Você não identificou a lenda correta desta vez.') + '</p>' +
+      '  <p class="score">Aproveitamento: ' + (state.mcScore ? 100 : 0) + '%</p>' +
       renderPointsGainedLine() +
       '  <button class="btn" style="margin-top:14px;" onclick="App.goToActivities()">VOLTAR ÀS ATIVIDADES</button>' +
       '</div>';
   }
-  var c = state.mcCase;
-  if (!c) return exitBtn + '<p>Carregando ocorrência...</p>';
+  var caso = PC_CASES[state.mcCaseKey];
+  if (!caso) return exitBtn + '<p>Carregando ocorrência...</p>';
+  var loc = caso.locations[state.mcLocation];
 
-  var sourceCard = function (label, icon, item, onclick) {
-    var cls = 'caso-source-card' + (item.aberto ? ' aberto' : '');
-    if (item.aberto) {
-      return '<div class="' + cls + '"><div class="caso-source-label">' + icon + ' ' + App.esc(item.label || label) + '</div><div class="caso-source-texto">' + App.esc(item.texto) + '</div></div>';
-    }
-    return '<button class="' + cls + '" ' + (state.mcRoundOver ? 'disabled' : '') + ' onclick="' + onclick + '"><div class="caso-source-label">' + icon + ' ' + App.esc(label) + '</div><div class="caso-source-hint">Clique para investigar esta fonte</div></button>';
-  };
+  var hotspotsHtml = loc.hotspots.map(function (h) {
+    var onclick = '';
+    if (h.type === 'clue') onclick = "App.pcShowClue('" + h.clueId + "','" + App.esc(h.clueLabel).replace(/'/g, "\\'") + "', '" + App.esc(h.clueText).replace(/'/g, "\\'") + "')";
+    else if (h.type === 'travel') onclick = "App.pcGoTo('" + h.target + "')";
+    else if (h.type === 'dialogue') onclick = "App.pcOpenDialogue('root')";
+    else if (h.type === 'accuse') onclick = 'App.toggleGuessModeCaso()';
+    var found = h.type === 'clue' && state.mcCluesFound.indexOf(h.clueId) !== -1;
+    return '' +
+      '<button class="pc-hotspot' + (found ? ' pc-hotspot-found' : '') + '" style="left:' + h.x + '%;top:' + h.y + '%;" ' +
+      (state.mcRoundOver ? 'disabled' : '') + ' onclick="' + onclick + '" title="' + App.esc(h.label) + '">' +
+      '  <span class="pc-hotspot-icon">' + h.icon + '</span>' +
+      '  <span class="pc-hotspot-label">' + App.esc(h.label) + '</span>' +
+      '</button>';
+  }).join('');
 
-  var fontesHtml = '' +
-    sourceCard('Evidências Físicas', '🔎', c.evidencias[0], "App.abrirEvidenciaCaso(0)") +
-    sourceCard('Análise de Ameaça', '🗂️', c.evidencias[1], "App.abrirEvidenciaCaso(1)") +
-    sourceCard('Relato da Testemunha', '🗣️', c.testemunho, "App.abrirTestemunhoCaso()") +
-    sourceCard('Registro de Ocorrência (B.O.)', '📄', c.registro, "App.abrirRegistroCaso()");
+  var introHtml = (loc.intro && state.mcCluesFound.length === 0 && state.mcLocation === caso.startLocation)
+    ? '<div class="pc-intro">' + App.esc(loc.intro) + '</div>' : '';
 
-  var fontesAbertas = App._casoFontesAbertas();
+  var journalHtml = '' +
+    '<div class="pc-journal">' +
+    '  <div class="pc-journal-title">🗂️ Pistas Reunidas (' + state.mcCluesFound.length + ')</div>' +
+    (state.mcCluesFound.length === 0
+      ? '  <div class="pc-journal-empty">Nenhuma pista ainda — explore o cenário.</div>'
+      : '  <ul>' + state.mcCluesFound.map(function (cid) { return '<li>' + App.esc(App.pcClueLabel(cid)) + '</li>'; }).join('') + '</ul>') +
+    '  <button class="btn btn-sm' + (state.mcGuessMode ? ' btn-outline' : '') + '" style="width:100%;margin-top:10px;" onclick="App.toggleGuessModeCaso()">' + (state.mcGuessMode ? 'VOLTAR À INVESTIGAÇÃO' : '🔦 IDENTIFICAR A LENDA') + '</button>' +
+    '</div>';
+
+  var clueModalHtml = state.mcLastClueLabel
+    ? '<div class="pc-modal-overlay" onclick="App.pcCloseClue()"><div class="pc-modal" onclick="event.stopPropagation()">' +
+      '  <div class="pc-modal-title">' + App.esc(state.mcLastClueLabel) + '</div>' +
+      '  <div class="pc-modal-text">' + App.esc(state.mcLastClueText) + '</div>' +
+      '  <button class="btn btn-sm" onclick="App.pcCloseClue()">FECHAR</button>' +
+      '</div></div>'
+    : '';
+
+  var dialogueHtml = '';
+  if (state.mcDialogueNode && loc.dialogue) {
+    var perguntas = loc.dialogue[state.mcDialogueNode] || [];
+    var perguntasHtml = perguntas.map(function (p) {
+      var asked = state.mcCluesFound.indexOf(p.clueId) !== -1;
+      return '<button class="pc-dialogue-q' + (asked ? ' asked' : '') + '" onclick="App.pcAskQuestion(\'' + p.clueId + '\',\'' + App.esc(p.clueLabel).replace(/'/g, "\\'") + "','" + App.esc(p.a).replace(/'/g, "\\'") + "')\">" + (asked ? '✔ ' : '') + App.esc(p.q) + '</button>';
+    }).join('');
+    dialogueHtml = '' +
+      '<div class="pc-modal-overlay" onclick="App.pcOpenDialogue(null)"><div class="pc-modal pc-dialogue" onclick="event.stopPropagation()">' +
+      '  <div class="pc-modal-title">🧔 Mestre do Barco</div>' +
+      '  <div class="pc-dialogue-questions">' + perguntasHtml + '</div>' +
+      '  <button class="btn btn-sm" onclick="App.pcOpenDialogue(null)">ENCERRAR CONVERSA</button>' +
+      '  </div></div>';
+  }
+
   var guessHtml = '';
   if (state.mcGuessMode) {
     var suspeitosHtml = state.mcOptions.map(function (o) {
-      var cls = 'suspect-card' + (state.mcRoundOver && o.id === c.alvoId ? ' revealed-target' : '');
+      var cls = 'suspect-card' + (state.mcRoundOver && o.id === caso.legendId ? ' revealed-target' : '');
       return '' +
         '<div class="' + cls + '">' +
         '  <div class="suspect-name">' + App.esc(o.nome) + '</div>' +
@@ -2435,23 +2551,25 @@ function renderGameCaso() {
         '  </div>' +
         '</div>';
     }).join('');
-    guessHtml = '<div class="suspect-grid">' + suspeitosHtml + '</div>';
+    guessHtml = '<div class="pc-modal-overlay" onclick="App.toggleGuessModeCaso()"><div class="pc-modal pc-guess" onclick="event.stopPropagation()">' +
+      '  <div class="pc-modal-title">🔦 Aponte a lenda responsável pela ocorrência</div>' +
+      '  <div class="suspect-grid">' + suspeitosHtml + '</div>' +
+      '  <button class="btn btn-sm btn-outline" onclick="App.toggleGuessModeCaso()">VOLTAR À INVESTIGAÇÃO</button>' +
+      '  </div></div>';
   }
 
   var feedbackClass = state.mcFeedbackOk === true ? ' ok' : state.mcFeedbackOk === false ? ' fail' : '';
   return exitBtn +
-    '<div class="game-progress">Ocorrência ' + (state.mcIndex + 1) + ' de ' + state.mcTotal + ' — Casos resolvidos: ' + state.mcScore + '</div>' +
-    renderTimerBar() +
-    '<div class="game-board caso-board">' +
-    '  <div class="game-header"><h2>MONTAGEM DE CASO</h2></div>' +
-    '  <div class="game-warning" style="background:rgba(0,0,0,.3);border-color:#444;color:#ccc;">Uma nova ocorrência acaba de chegar. Investigue as fontes disponíveis (não é preciso abrir todas) e, quando tiver pistas suficientes, aponte qual lenda está por trás do caso.</div>' +
-    '  <div class="caso-sources-grid">' + fontesHtml + '</div>' +
-    '  <div class="game-actions" style="text-align:center;margin:16px 0;">' +
-    '    <button class="btn' + (state.mcGuessMode ? ' btn-outline' : '') + '" ' + (state.mcRoundOver ? 'disabled' : '') + ' onclick="App.toggleGuessModeCaso()">' + (state.mcGuessMode ? 'VOLTAR À INVESTIGAÇÃO' : '🔦 IDENTIFICAR A LENDA (' + fontesAbertas + ' fonte(s) consultada(s))') + '</button>' +
-    '  </div>' +
+    '<div class="game-progress">' + App.esc(loc.label) + '</div>' +
+    '<div class="pc-scene" style="background-image:url(\'' + App.esc(loc.background) + '\')">' +
+    introHtml +
+    hotspotsHtml +
+    '</div>' +
+    journalHtml +
+    clueModalHtml +
+    dialogueHtml +
     guessHtml +
-    '  <div class="game-feedback' + feedbackClass + '">' + App.esc(state.mcFeedback) + '</div>' +
-    '</div>';
+    '<div class="game-feedback' + feedbackClass + '">' + App.esc(state.mcFeedback) + '</div>';
 }
 
 document.addEventListener('DOMContentLoaded', function () { App.init(); });
