@@ -637,6 +637,546 @@ var PC_CASES = {
       },
     },
   },
+  iara: {
+    legendId: '028',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Três pescadores desapareceram na mesma curva do rio neste mês, sempre ao entardecer. Nenhum corpo foi encontrado.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Múltiplos registros de desaparecimento de pescadores na mesma curva do rio, sempre ao entardecer, sem corpos localizados nas buscas subsequentes.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Curva do Rio', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Pescador Sobrevivente', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Curva do Rio',
+        background: 'cenas/boiuna_rio.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '💧', label: 'Relatos dos Pescadores',
+            clueId: 'modus_operandi', clueLabel: 'Relatos dos Pescadores',
+            clueText: 'Testemunhas relatam ouvir um canto vindo da água antes de perder a consciência e caminhar em direção ao rio. Relatos mencionam uma mulher de cabelos verdes vista por segundos antes do desaparecimento.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '🎣', label: 'Redes Abandonadas',
+            clueId: 'marcas', clueLabel: 'Redes Abandonadas',
+            clueText: 'Redes de pesca encontradas intactas e abandonadas na margem, como se tivessem sido soltas de repente — sem sinal de luta ou briga.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Pescador Sobrevivente', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '🧔', label: 'Conversar com Pescador Sobrevivente' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que você ouviu antes de ir em direção ao rio?', clueId: 'testemunho', clueLabel: 'Depoimento — o canto',
+              a: '"Ouvi um canto vindo lá da água, bonito demais pra ser gente de verdade. Larguei a rede sem nem perceber que tinha largado e fui andando na direção do rio, os pés já na água quando alguém gritou meu nome e quebrou o feitiço."' },
+            { q: 'Chegou a ver quem estava cantando?', clueId: 'detalhe', clueLabel: 'Depoimento — a visão',
+              a: '"Só de relance, uma mulher de cabelos compridos, verdes feito alga, entre as pedras. Quando percebi que tinha visto aquilo, já estava com a água na cintura."' },
+          ],
+        },
+      },
+    },
+  },
+  curupira: {
+    legendId: '009',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Uma equipe inteira de desmatamento ilegal sumiu por 14 horas na mesma área de extração. Os tratores foram encontrados intactos, motores desligados.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Equipe de desmatamento desaparecida por 14 horas na mesma área de extração ilegal. Tratores encontrados intactos, motores desligados, chaves na ignição.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Área de Extração Ilegal', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Operador de Rádio', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Área de Extração Ilegal',
+        background: 'cenas/floresta.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '🐾', label: 'Pegadas Invertidas',
+            clueId: 'modus_operandi', clueLabel: 'Pegadas Invertidas',
+            clueText: 'Pegadas encontradas na lama estão viradas na direção contrária ao deslocamento real de quem as deixou — um padrão que faz qualquer perseguidor seguir para o lado errado.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '🧭', label: 'Bússolas Erráticas',
+            clueId: 'marcas', clueLabel: 'Bússolas Erráticas',
+            clueText: 'Bússolas da equipe apresentaram funcionamento errático durante todo o período do desaparecimento, sempre apontando de volta para o mesmo ponto da mata.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Operador de Rádio', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '📻', label: 'Conversar com Operador de Rádio' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que aconteceu quando tentaram voltar ao acampamento?', clueId: 'testemunho', clueLabel: 'Gravação — o looping',
+              a: '"A gente andou reto por seis horas seguindo a bússola e voltou pro mesmo acampamento, com as próprias pegadas por cima das nossas. O assobio tá mais perto agora — parece que ele sabe que a gente notou."' },
+            { q: 'Vocês chegaram a ver alguém na mata?', clueId: 'detalhe', clueLabel: 'Gravação — o vulto',
+              a: '"Só um vulto pequeno, correndo entre as árvores rápido demais pra ser gente. Os pés dele pareciam virados do jeito errado, apontando pra trás."' },
+          ],
+        },
+      },
+    },
+  },
+  saci: {
+    legendId: '021',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Moradores da mesma rua registraram atos de vandalismo sem sinal de arrombamento, sempre em noites de vento forte.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Múltiplos chamados de vandalismo sem qualquer sinal de arrombamento nas residências da mesma rua, todos registrados em noites de vento forte.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Fundo do Quintal', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Dona de Casa', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Fundo do Quintal',
+        background: 'cenas/floresta.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '🌀', label: 'Redemoinho Filmado',
+            clueId: 'modus_operandi', clueLabel: 'Redemoinho Filmado',
+            clueText: 'Um redemoinho de vento foi filmado por uma câmera de segurança cruzando o quintal segundos antes do início da bagunça na casa.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '🍲', label: 'Panelas no Telhado',
+            clueId: 'marcas', clueLabel: 'Panelas no Telhado',
+            clueText: 'Objetos e panelas foram encontrados empilhados no telhado das casas atingidas, um padrão idêntico em todos os casos registrados.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Dona de Casa', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '👵', label: 'Conversar com Dona de Casa' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que aconteceu na noite da ocorrência?', clueId: 'testemunho', clueLabel: 'Gravação — a bagunça',
+              a: '"O leite talhou na hora, o feijão queimou sozinho no fogo baixo e as panelas todas apareceram em cima do telhado, empilhadas. No meio da bagunça toda eu escutei bem claro a risada dele vindo do quintal."' },
+            { q: 'Chegou a ver a pessoa responsável?', clueId: 'detalhe', clueLabel: 'Gravação — a sombra',
+              a: '"Só uma sombra pequena, de uma perna só, sumindo dentro de um redemoinho de vento no fim do quintal. Ficou um cheiro de fumo de cachimbo no ar depois que ele foi embora."' },
+          ],
+        },
+      },
+    },
+  },
+  capelobo: {
+    legendId: '010',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Um corpo foi encontrado na mata com um ferimento cilíndrico na base do crânio, sem perda de sangue compatível com o ferimento.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Corpos encontrados com orifício cilíndrico na base do crânio, sem perda de sangue compatível com o ferimento. Perito não identificou instrumento correspondente em nenhum catálogo forense.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Cena do Ataque', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Sobrevivente', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Cena do Ataque',
+        background: 'cenas/floresta.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '🩸', label: 'Marcas de Garras',
+            clueId: 'modus_operandi', clueLabel: 'Marcas de Garras',
+            clueText: 'Marcas de garras profundas rasgam o tronco das árvores próximas ao corpo, altas demais para qualquer animal catalogado na região.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '🐾', label: 'Pegadas ao Redor',
+            clueId: 'marcas', clueLabel: 'Pegadas ao Redor',
+            clueText: 'Pegadas alongadas e estreitas, com formato entre humano e animal, foram encontradas ao redor da cena — todas concentradas num raio pequeno, como se a criatura tivesse ficado parada observando.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Sobrevivente', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '🧑', label: 'Conversar com Sobrevivente' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que você viu no ataque?', clueId: 'testemunho', clueLabel: 'Transcrição — o ataque',
+              a: '"O bicho agarrou o Zé pelas costas e não soltou mais, por mais que ele gritasse. Tinha um focinho comprido, quase de osso à mostra, e as garras entraram na roupa dele feito faca em manteiga."' },
+            { q: 'Como você conseguiu escapar?', clueId: 'detalhe', clueLabel: 'Transcrição — a fuga',
+              a: '"Lembrei de uma história antiga sobre o ponto fraco dele e mirei no umbigo com a faca que tinha na cintura. Só assim ele me largou e sumiu mata adentro, uivando."' },
+          ],
+        },
+      },
+    },
+  },
+  mula: {
+    legendId: '022',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Uma viatura policial foi encontrada carbonizada na rodovia numa noite de quinta-feira, sem vestígio de acelerante e sem sobreviventes.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Viatura policial carbonizada na rodovia BR-285 em noite de quinta-feira, sem vestígio de acelerante e sem sobreviventes na guarnição.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Rodovia BR-285', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Viajante', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Rodovia BR-285',
+        background: 'cenas/estrada.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '🔥', label: 'Ferraduras no Asfalto',
+            clueId: 'modus_operandi', clueLabel: 'Ferraduras no Asfalto',
+            clueText: 'Ferraduras encontradas no asfalto estão parcialmente derretidas, num padrão de galope que se repete a cada poucos metros ao longo de vários quilômetros.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '🌾', label: 'Trajeto Queimado',
+            clueId: 'marcas', clueLabel: 'Trajeto Queimado',
+            clueText: 'A vegetação na beira da estrada foi queimada em um trajeto contínuo, como se uma chama tivesse corrido pelo acostamento sem nunca tocar o chão diretamente.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Viajante', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '🚚', label: 'Conversar com Viajante' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que vocês ouviram antes do incêndio na estrada?', clueId: 'testemunho', clueLabel: 'Gravação — o relincho',
+              a: '"Ouvimos o relincho primeiro, agudo demais para ser de um bicho normal, e logo depois veio um calor insuportável vindo da estrada. A gente se jogou na vala e ainda assim a poeira quente passou por cima — a estrada inteira pegou fogo atrás da gente."' },
+            { q: 'Conseguiram ver o animal?', clueId: 'detalhe', clueLabel: 'Gravação — a silhueta',
+              a: '"Só uma silhueta passando rápido demais pra enxergar direito, com uma labareda enorme onde deveria estar a cabeça. Nunca mais andei por essa estrada numa quinta à noite."' },
+          ],
+        },
+      },
+    },
+  },
+  noiva: {
+    legendId: '025',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Acidentes fatais aumentaram na mesma curva da rodovia, todos com motoristas relatando uma passageira momentos antes de perder o controle do veículo.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Aumento expressivo de acidentes fatais concentrados na mesma curva da rodovia, todos com motoristas relatando uma passageira antes da perda de controle do veículo.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Curva Fatal', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Caminhoneiro', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Curva Fatal',
+        background: 'cenas/estrada.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '📹', label: 'Câmera de Tráfego',
+            clueId: 'modus_operandi', clueLabel: 'Câmera de Tráfego',
+            clueText: 'Câmeras de tráfego registram uma figura feminina de branco parada no acostamento minutos antes de cada acidente, sempre na mesma curva.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '🚗', label: 'Banco Vazio',
+            clueId: 'marcas', clueLabel: 'Banco Vazio',
+            clueText: 'Nenhuma das vítimas resgatadas confirma a presença de uma segunda pessoa no veículo, apesar de terem parado para dar carona pouco antes da colisão.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Caminhoneiro', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '🚛', label: 'Conversar com Caminhoneiro' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que aconteceu quando ela entrou no caminhão?', clueId: 'testemunho', clueLabel: 'Gravação — a carona',
+              a: '"Ela entrou no caminhão bem na curva, pálida, com o vestido molhado mesmo sem estar chovendo. Ficou calada o caminho todo. Quando fui perguntar onde ela queria descer, só tinha o cheiro de flor murcha e o banco completamente vazio."' },
+            { q: 'Ela disse alguma coisa antes de desaparecer?', clueId: 'detalhe', clueLabel: 'Gravação — o aviso',
+              a: '"Só apontou pra frente, pro mesmo trecho da curva onde os acidentes vêm acontecendo. Foi a última coisa que ela fez antes de eu notar que o banco tava vazio."' },
+          ],
+        },
+      },
+    },
+  },
+  besta: {
+    legendId: '023',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Três idosos sofreram parada cardíaca simultânea durante a madrugada na mesma quadra, sem histórico prévio de comorbidades graves.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Três idosos sofreram parada cardíaca simultânea durante a madrugada na mesma quadra, sem histórico prévio de comorbidades graves registrado em prontuário.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Rua Principal', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Sacerdote Local', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Rua Principal',
+        background: 'cenas/estrada.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '🐴', label: 'Marcas de Patas',
+            clueId: 'modus_operandi', clueLabel: 'Marcas de Patas',
+            clueText: 'Marcas de patas equinas foram encontradas na rua principal, profundas demais para um cavalo comum, formando um trajeto reto por vários quarteirões.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '🐕', label: 'Uivos Simultâneos',
+            clueId: 'marcas', clueLabel: 'Uivos Simultâneos',
+            clueText: 'Todos os cães da vizinhança uivaram ao mesmo tempo minutos antes das ocorrências, segundo relatos de moradores próximos.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Sacerdote Local', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '🙏', label: 'Conversar com Sacerdote Local' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que você percebeu na noite da ocorrência?', clueId: 'testemunho', clueLabel: 'Gravação — os uivos',
+              a: '"Quando as patas bateram nas pedras da rua principal, todos os cachorros da cidade começaram a uivar ao mesmo tempo, um choro que não parecia latido. As galinhas do meu quintal morreram de susto antes mesmo de eu chegar na janela."' },
+            { q: 'Chegou a ver a criatura de perto?', clueId: 'detalhe', clueLabel: 'Gravação — a sombra',
+              a: '"Só uma sombra enorme, com corpo de cavalo e um tronco que não parecia terminar em nada definido, cruzando a rua numa velocidade impossível. Depois disso a cidade inteira ficou em silêncio até o amanhecer."' },
+          ],
+        },
+      },
+    },
+  },
+  maeouro: {
+    legendId: '002',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Equipamentos de mineração ilegal foram encontrados fundidos à rocha, sem sinal de explosivo ou combustível utilizado no ataque.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Equipamentos de mineração ilegal encontrados fundidos à rocha, sem sinal de explosivo ou combustível utilizado. Perícia não identificou fonte de calor compatível com os danos.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Jazida Clandestina', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Garimpeiro', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Jazida Clandestina',
+        background: 'cenas/mina.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '🔆', label: 'Esfera de Luz',
+            clueId: 'modus_operandi', clueLabel: 'Esfera de Luz',
+            clueText: 'Uma esfera de luz intensa foi registrada por câmeras de segurança pairando sobre a área minutos antes de cada incidente, sem qualquer som de motor ou explosão.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '⛏️', label: 'Metal Derretido',
+            clueId: 'marcas', clueLabel: 'Metal Derretido',
+            clueText: 'O metal das escavadeiras derreteu de forma concentrada e simétrica, como se o calor tivesse vindo de um único ponto parado no ar.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Garimpeiro', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '⛏️', label: 'Conversar com Garimpeiro' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que você viu antes do equipamento derreter?', clueId: 'testemunho', clueLabel: 'Depoimento — a esfera',
+              a: '"Uma bola de fogo desceu do céu sem barulho nenhum, baixinho como uma vela grande, e pousou em cima da escavadeira. Em segundos o metal já estava vermelho e derretendo. Antes de sumir, ela ficou parada olhando pra gente — dava pra jurar que tinha um rosto de mulher no meio da luz."' },
+            { q: 'Isso já tinha acontecido antes na região?', clueId: 'detalhe', clueLabel: 'Depoimento — o aviso antigo',
+              a: '"Os mais antigos da região sempre falaram pra não passar dos limites da mata perto da jazida velha. Diziam que era terra protegida e que quem mexesse lá sem permissão ia ver fogo — a gente riu na hora, não ri mais."' },
+          ],
+        },
+      },
+    },
+  },
+  boca: {
+    legendId: '027',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Corpos foram encontrados em vielas do centro sem marcas de violência aparente, cada um com uma nota de dinheiro dobrada entre os lábios.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Corpos encontrados em vielas do centro sem marcas de violência aparente, apenas com uma nota de dinheiro dobrada e colocada entre os lábios.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Viela do Centro', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Morador de Rua', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Viela do Centro',
+        background: 'cenas/beco.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '🌙', label: 'Homem de Terno Branco',
+            clueId: 'modus_operandi', clueLabel: 'Homem de Terno Branco',
+            clueText: 'Testemunhas descrevem um homem de terno branco e dentes de ouro reluzente parado nas encruzilhadas próximas às ocorrências, sempre depois da meia-noite.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '💰', label: 'Dívidas de Jogo',
+            clueId: 'marcas', clueLabel: 'Dívidas de Jogo',
+            clueText: 'Todas as vítimas tinham histórico recente de apostas em jogos de azar clandestinos na mesma região.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Morador de Rua', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '🧑', label: 'Conversar com Morador de Rua' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que aconteceu no encontro?', clueId: 'testemunho', clueLabel: 'Gravação — o encontro',
+              a: '"Ele sorriu no escuro antes mesmo de eu ver o resto do corpo. A luz do poste bateu no ouro dos dentes e ele falou, bem calmo, que eu tava devendo a vida pra ele desde a última aposta que eu nem lembrava ter feito."' },
+            { q: 'Como você escapou?', clueId: 'detalhe', clueLabel: 'Gravação — a fuga',
+              a: '"Corri sem olhar pra trás até uma igreja aberta perto dali. Ele não atravessou a soleira da porta — ficou parado do lado de fora, ainda sorrindo, até eu não aguentar mais olhar e fechar os olhos."' },
+          ],
+        },
+      },
+    },
+  },
+  negrinho: {
+    legendId: '011',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Moradores da região relatam objetos perdidos sendo devolvidos misteriosamente após acender uma vela em nome do menino do cavalo baio.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Mito associado a episódio de maus-tratos contra um menino escravizado no século XIX; devoção popular ativa até hoje, com registros de velas acesas em 14 de maio.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Porteira do Pasto', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Fazendeiro', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Porteira do Pasto',
+        background: 'cenas/fazenda.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '🕯️', label: 'Velas na Porteira',
+            clueId: 'modus_operandi', clueLabel: 'Velas na Porteira',
+            clueText: 'Velas parcialmente derretidas foram encontradas em porteiras e cercas de propriedades rurais da região, sempre associadas ao reaparecimento de objetos perdidos.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '🐴', label: 'Pegadas Isoladas',
+            clueId: 'marcas', clueLabel: 'Pegadas Isoladas',
+            clueText: 'Pegadas de cavalo pequeno aparecem isoladas no meio do pasto, sem qualquer rastro de entrada ou saída da propriedade.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Fazendeiro', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '🤠', label: 'Conversar com Fazendeiro' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que aconteceu com as chaves perdidas?', clueId: 'testemunho', clueLabel: 'Depoimento — as chaves',
+              a: '"Perdi as chaves do galpão no meio do pasto, já era de noite e não tinha como procurar. Acendi uma vela na porteira, como minha avó ensinou, e de manhã as chaves estavam na varanda, limpinhas, do lado do café que sobrou."' },
+            { q: 'Chegou a ver o menino do cavalo?', clueId: 'detalhe', clueLabel: 'Depoimento — o vulto',
+              a: '"Nunca vi de perto, só de longe, um vulto pequeno montado num cavalo baio, parado na linha da cerca à meia-noite. Ele nunca fez mal a ninguém aqui — só ajuda quem reza direito."' },
+          ],
+        },
+      },
+    },
+  },
+  anhanga: {
+    legendId: '004',
+    startLocation: 'delegacia',
+    locations: {
+      delegacia: {
+        label: 'Delegacia — Sala de Casos',
+        background: 'cenas/delegacia.jpg',
+        intro: 'Dois caçadores foram encontrados mortos pelos próprios rifles em área de mata fechada, sem qualquer rastro humano de terceiros na cena.',
+        hotspots: [
+          { id: 'pasta', type: 'clue', x: 30, y: 62, icon: '📁', label: 'Pasta do Caso',
+            clueId: 'ocorrencia', clueLabel: 'Registro da Ocorrência',
+            clueText: 'Dois caçadores encontrados mortos pelos próprios rifles em área de mata fechada. Nenhum terceiro rastro humano localizado na cena, apenas pegadas de veado circulando o local.' },
+          { id: 'ir_cena', type: 'travel', x: 78, y: 40, icon: '🔦', label: 'Ir até Mata Fechada', target: 'cena' },
+          { id: 'ir_casa', type: 'travel', x: 6, y: 45, icon: '🚪', label: 'Ouvir Fita 12 (Gravação Recuperada)', target: 'casa' },
+          { id: 'concluir', type: 'accuse', x: 52, y: 12, icon: '🕵️', label: 'Concluir Investigação' },
+        ],
+      },
+      cena: {
+        label: 'Mata Fechada',
+        background: 'cenas/floresta.jpg',
+        hotspots: [
+          { id: 'clue1', type: 'clue', x: 50, y: 62, icon: '🦌', label: 'Gravação de Campo',
+            clueId: 'modus_operandi', clueLabel: 'Gravação de Campo',
+            clueText: 'Uma fita de gravação de campo capturou gritos confusos de pânico segundos antes dos disparos fatais, mencionando um veado no meio da confusão.' },
+          { id: 'clue2', type: 'clue', x: 18, y: 82, icon: '🐾', label: 'Pegadas Circulares',
+            clueId: 'marcas', clueLabel: 'Pegadas Circulares',
+            clueText: 'Pegadas de veado foram encontradas circulando repetidamente o local da morte, um padrão que não corresponde ao comportamento natural da espécie.' },
+          { id: 'voltar_deleg', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+          { id: 'ir_casa2', type: 'travel', x: 90, y: 15, icon: '🚪', label: 'Ouvir Fita 12 (Gravação Recuperada)', target: 'casa' },
+        ],
+      },
+      casa: {
+        label: 'Sala de Depoimentos',
+        background: 'cenas/boiuna_casa.jpg',
+        hotspots: [
+          { id: 'testemunha', type: 'dialogue', x: 50, y: 55, icon: '📼', label: 'Fita 12 (Gravação Recuperada)' },
+          { id: 'voltar_deleg2', type: 'travel', x: 6, y: 15, icon: '⬅️', label: 'Voltar à Delegacia', target: 'delegacia' },
+        ],
+        dialogue: {
+          root: [
+            { q: 'O que se ouve no início da gravação?', clueId: 'testemunho', clueLabel: 'Fita 12 — os gritos',
+              a: '(Sons de tiros confusos seguidos de gritos: "Ele está no cervo! Não atira no cervo, atira nele!" — voz masculina, em pânico.)' },
+            { q: 'O que se ouve depois dos gritos?', clueId: 'detalhe', clueLabel: 'Fita 12 — o silêncio',
+              a: '(Um silêncio prolongado após os disparos, interrompido apenas pelo som de cascos se afastando lentamente entre as árvores.)' },
+          ],
+        },
+      },
+    },
+  },
+
 };
 
 var state = {
@@ -1581,11 +2121,25 @@ var App = {
      Versão visual: o investigador navega entre cenários ilustrados (delegacia, cena do crime,
      casa da testemunha), clica em pontos de interesse para revelar pistas e conduz um diálogo
      com a testemunha escolhendo perguntas. Só pode acusar uma lenda depois de ter investigado
-     pelo menos uma pista. Protótipo funcional cobrindo o caso da Boiúna (id 015) — a estrutura de
-     dados (PC_CASES) foi feita para receber novos casos completos no mesmo formato. */
+     pelo menos uma pista. Cobre 12 casos completos (PC_CASES), sorteados em baralho sem repetição
+     — mesmo padrão anti-repetição usado no "Descubra a Lenda" (siif_descubra_pool). */
+  loadCasoPool: function () {
+    try { var raw = localStorage.getItem('siif_caso_pool'); var arr = raw ? JSON.parse(raw) : []; return Array.isArray(arr) ? arr : []; } catch (e) { return []; }
+  },
+  saveCasoPool: function (pool) {
+    try { localStorage.setItem('siif_caso_pool', JSON.stringify(pool)); } catch (e) {}
+  },
+  nextCasoKey: function () {
+    var allKeys = Object.keys(PC_CASES);
+    var pool = App.loadCasoPool().filter(function (k) { return allKeys.indexOf(k) !== -1; });
+    if (pool.length === 0) pool = App.embaralhar(allKeys);
+    var key = pool.shift();
+    App.saveCasoPool(pool);
+    return key;
+  },
   iniciarJogoCaso: function () {
     state.screen = 'gamecaso';
-    state.mcCaseKey = 'boiuna';
+    state.mcCaseKey = App.nextCasoKey();
     var caso = PC_CASES[state.mcCaseKey];
     var db = App.db();
     var alvo = db.filter(function (c) { return c.id === caso.legendId; })[0];

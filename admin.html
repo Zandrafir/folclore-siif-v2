@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>S.I.I.F — Admin do Ranking</title>
+<style>
+  :root {
+    --bg: #0b0b0d; --panel: #16161a; --panel2: #1c1c21; --border: #2c2c33;
+    --red: #c81e1e; --red-dark: #8f1414; --text: #e7e7ea; --muted: #9a9aa3;
+    --green: #2f9e56; --amber: #b58900;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'Courier New', Consolas, monospace;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 22px; letter-spacing: 1px; color: var(--red); margin: 0 0 4px; text-transform: uppercase; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  .badge-warn {
+    display: inline-block; background: #3a1414; border: 1px solid var(--red-dark); color: #ff9d9d;
+    font-size: 11px; padding: 3px 8px; border-radius: 3px; margin-bottom: 20px; letter-spacing: .5px;
+  }
+
+  /* --- gate --- */
+  #gate { max-width: 380px; margin: 80px auto; text-align: center; }
+  #gate p { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+  #gate input {
+    width: 100%; padding: 12px; background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); font-family: inherit; font-size: 15px; border-radius: 4px; margin-bottom: 12px;
+  }
+  #gate button, .btn {
+    background: var(--red-dark); border: 1px solid var(--red); color: #fff; padding: 10px 18px;
+    font-family: inherit; font-size: 13px; cursor: pointer; border-radius: 4px; letter-spacing: .5px;
+  }
+  #gate button:hover, .btn:hover { background: var(--red); }
+  #gateError { color: #ff6b6b; font-size: 12px; margin-top: 8px; min-height: 16px; }
+
+  /* --- painel --- */
+  #panel { display: none; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .btn-secondary { background: var(--panel2); border: 1px solid var(--border); color: var(--text); }
+  .btn-secondary:hover { background: #24242b; }
+  .btn-danger { background: #3a1414; border: 1px solid var(--red-dark); color: #ff9d9d; }
+  .btn-danger:hover { background: #4a1a1a; }
+  .btn-small { padding: 6px 10px; font-size: 12px; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  thead th {
+    text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted);
+    padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--panel2);
+  }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #1a1a1f; }
+  .pts { font-weight: bold; color: #ffd166; }
+  .games-mini { color: var(--muted); font-size: 11px; line-height: 1.6; }
+  .games-mini b { color: #8bd17c; }
+  .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .empty { text-align: center; color: var(--muted); padding: 40px 0; }
+
+  /* --- modal editar --- */
+  .overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 50;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .overlay.open { display: flex; }
+  .modal { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 22px; max-width: 420px; width: 100%; }
+  .modal h3 { margin: 0 0 14px; color: var(--red); font-size: 16px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; }
+  .field input { width: 100%; padding: 8px; background: var(--panel2); border: 1px solid var(--border); color: var(--text); font-family: inherit; border-radius: 4px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  .game-edit-row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 6px; }
+  .game-edit-row span { width: 130px; color: var(--muted); }
+  .game-edit-row input[type=number] { width: 70px; padding: 4px; background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 3px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 11px; margin-top: 40px; }
+  a.back { color: var(--muted); text-decoration: none; font-size: 12px; }
+  a.back:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="gate">
+    <h1>🔒 S.I.I.F — Admin</h1>
+    <p>Painel de gerenciamento do ranking. Digite a senha de administrador para continuar.</p>
+    <input type="password" id="gatePw" placeholder="Senha de administrador" autofocus>
+    <button onclick="tryEnter()">Entrar</button>
+    <div id="gateError"></div>
+  </div>
+
+  <div id="panel">
+    <h1>🔒 Admin do Ranking — S.I.I.F.</h1>
+    <div class="subtitle">Painel separado do jogo — nada aqui afeta a experiência dos investigadores.</div>
+    <div class="badge-warn">⚠ Alterações aqui são permanentes neste navegador/dispositivo</div>
+
+    <div class="toolbar">
+      <button class="btn btn-secondary btn-small" onclick="exportBackup()">⬇ Exportar Backup (.json)</button>
+      <button class="btn btn-secondary btn-small" onclick="document.getElementById('importFile').click()">⬆ Importar Backup</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(this.files[0])">
+      <button class="btn btn-danger btn-small" onclick="resetAll()">🗑 Zerar Ranking Inteiro</button>
+      <a class="back" href="index.html" style="margin-left:auto; align-self:center;">← Voltar ao S.I.I.F.</a>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Investigador</th><th>Sala</th><th>Pontos</th><th>Jogos concluídos</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="emptyMsg" class="empty" style="display:none;">Nenhum investigador registrado neste dispositivo ainda.</div>
+  </div>
+
+</div>
+
+<div class="overlay" id="editOverlay">
+  <div class="modal">
+    <h3>Editar Investigador</h3>
+    <div class="field">
+      <label>Nome</label>
+      <input type="text" id="editName" disabled>
+    </div>
+    <div class="field">
+      <label>Sala</label>
+      <input type="text" id="editSala">
+    </div>
+    <div id="editGames"></div>
+    <div class="field" style="margin-top:14px;">
+      <label>Pontos totais (recalculados a partir dos jogos acima, mas você pode sobrescrever)</label>
+      <input type="number" id="editPoints">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary btn-small" onclick="closeEdit()">Cancelar</button>
+      <button class="btn btn-small" onclick="saveEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<footer>S.I.I.F — Painel administrativo · Uso restrito ao professor</footer>
+
+<script>
+var SENHA_ADMIN = 'Folclore';
+var GAME_LABELS = { descubra: 'Descubra a Lenda', vf: 'Teste de Campo', associe: 'Mapeamento de Campo', detetive: 'Detetive de Eliminação', rv: 'Reconhecimento Visual', emoji: 'Combinação de Pistas', caso: 'Montagem de Caso' };
+var editingName = null;
+
+function normPw(s) { return (s || '').trim().toLowerCase(); }
+
+function tryEnter() {
+  var pw = document.getElementById('gatePw').value;
+  if (normPw(pw) !== normPw(SENHA_ADMIN)) {
+    document.getElementById('gateError').textContent = 'Senha incorreta. Verifique se digitou "Folclore" sem espaços extras.';
+    return;
+  }
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('panel').style.display = 'block';
+  render();
+}
+document.getElementById('gatePw').addEventListener('keydown', function (e) { if (e.key === 'Enter') tryEnter(); });
+
+function getPlayers() {
+  try {
+    var raw = localStorage.getItem('siif_players');
+    var obj = raw ? JSON.parse(raw) : {};
+    return (obj && typeof obj === 'object') ? obj : {};
+  } catch (e) { return {}; }
+}
+function savePlayers(players) {
+  try { localStorage.setItem('siif_players', JSON.stringify(players)); } catch (e) { alert('Não foi possível salvar (armazenamento do navegador cheio ou indisponível).'); }
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+}
+
+function render() {
+  var players = getPlayers();
+  var names = Object.keys(players).sort(function (a, b) { return (players[b].points || 0) - (players[a].points || 0); });
+  var tbody = document.getElementById('tbody');
+  if (names.length === 0) {
+    tbody.innerHTML = '';
+    document.getElementById('emptyMsg').style.display = 'block';
+    return;
+  }
+  document.getElementById('emptyMsg').style.display = 'none';
+  tbody.innerHTML = names.map(function (name) {
+    var p = players[name];
+    var games = p.games || {};
+    var doneList = Object.keys(GAME_LABELS).filter(function (k) { return games[k] && games[k].done; });
+    var gamesHtml = doneList.length
+      ? '<div class="games-mini">' + doneList.map(function (k) { return '<b>' + esc(GAME_LABELS[k]) + '</b>: ' + games[k].percent + '%'; }).join('<br>') + '</div>'
+      : '<div class="games-mini">— nenhum ainda —</div>';
+    return '<tr>' +
+      '<td>' + esc(name) + '</td>' +
+      '<td>' + esc(p.sala || '—') + '</td>' +
+      '<td class="pts">' + (p.points || 0) + '</td>' +
+      '<td>' + gamesHtml + '</td>' +
+      '<td><div class="row-actions">' +
+        '<button class="btn btn-secondary btn-small" onclick="openEdit(' + JSON.stringify(name) + ')">✎ Editar</button>' +
+        '<button class="btn btn-danger btn-small" onclick="deletePlayer(' + JSON.stringify(name) + ')">🗑 Excluir</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function deletePlayer(name) {
+  if (!confirm('Excluir "' + name + '" do ranking? Essa ação não pode ser desfeita.')) return;
+  var players = getPlayers();
+  delete players[name];
+  savePlayers(players);
+  render();
+}
+
+function openEdit(name) {
+  editingName = name;
+  var players = getPlayers();
+  var p = players[name];
+  if (!p) return;
+  document.getElementById('editName').value = name;
+  document.getElementById('editSala').value = p.sala || '';
+  document.getElementById('editPoints').value = p.points || 0;
+  var games = p.games || {};
+  var html = '<label style="display:block;font-size:11px;color:var(--muted);margin:10px 0 6px;text-transform:uppercase;">Jogos (% concluído, vazio = não jogou)</label>';
+  Object.keys(GAME_LABELS).forEach(function (k) {
+    var val = (games[k] && games[k].done) ? games[k].percent : '';
+    html += '<div class="game-edit-row"><span>' + esc(GAME_LABELS[k]) + '</span><input type="number" min="0" max="100" data-game="' + k + '" value="' + val + '" placeholder="—"></div>';
+  });
+  document.getElementById('editGames').innerHTML = html;
+  document.getElementById('editOverlay').classList.add('open');
+}
+function closeEdit() {
+  document.getElementById('editOverlay').classList.remove('open');
+  editingName = null;
+}
+function saveEdit() {
+  if (!editingName) return;
+  var players = getPlayers();
+  var p = players[editingName];
+  if (!p) return;
+  p.sala = document.getElementById('editSala').value;
+  var games = {};
+  document.querySelectorAll('#editGames input[data-game]').forEach(function (inp) {
+    var k = inp.getAttribute('data-game');
+    var v = inp.value;
+    games[k] = (v === '' ? null : { done: true, percent: Math.max(0, Math.min(100, parseInt(v, 10) || 0)) });
+  });
+  p.games = games;
+  var manualPts = parseInt(document.getElementById('editPoints').value, 10);
+  var computed = Object.keys(games).reduce(function (sum, k) { return sum + (games[k] && games[k].done ? games[k].percent : 0); }, 0);
+  p.points = isNaN(manualPts) ? computed : manualPts;
+  players[editingName] = p;
+  savePlayers(players);
+  closeEdit();
+  render();
+}
+
+function exportBackup() {
+  var players = getPlayers();
+  var blob = new Blob([JSON.stringify(players, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var stamp = new Date().toISOString().slice(0, 10);
+  a.href = url; a.download = 'siif_ranking_backup_' + stamp + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importBackup(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function () {
+    try {
+      var obj = JSON.parse(reader.result);
+      if (!obj || typeof obj !== 'object') throw new Error('formato inválido');
+      if (!confirm('Importar este backup vai SUBSTITUIR o ranking atual deste navegador. Confirmar?')) return;
+      savePlayers(obj);
+      render();
+      alert('Backup importado com sucesso.');
+    } catch (e) {
+      alert('Arquivo inválido: ' + e.message);
+    }
+  };
+  reader.readAsText(file);
+  document.getElementById('importFile').value = '';
+}
+function resetAll() {
+  if (!confirm('Isso apaga TODOS os investigadores do ranking deste dispositivo. Recomendado: exporte um backup antes. Confirmar mesmo assim?')) return;
+  if (!confirm('Tem certeza mesmo? Essa ação é irreversível.')) return;
+  localStorage.removeItem('siif_players');
+  localStorage.removeItem('siif_current_player');
+  render();
+}
+</script>
+</body>
+</html>
