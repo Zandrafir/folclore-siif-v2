@@ -106,6 +106,7 @@
       <button class="btn btn-danger btn-small" onclick="resetAll()">🗑 Zerar Ranking Inteiro</button>
       <a class="back" href="index.html" style="margin-left:auto; align-self:center;">← Voltar ao S.I.I.F.</a>
     </div>
+    <div id="backupStatus" style="color:var(--muted); font-size:11px; margin:-12px 0 18px;">Nenhum backup automático ainda nesta sessão.</div>
 
     <table>
       <thead>
@@ -159,6 +160,7 @@ function tryEnter() {
   document.getElementById('gate').style.display = 'none';
   document.getElementById('panel').style.display = 'block';
   render();
+  autoBackupIfNeeded();
 }
 document.getElementById('gatePw').addEventListener('keydown', function (e) { if (e.key === 'Enter') tryEnter(); });
 
@@ -172,11 +174,47 @@ function getPlayers() {
 function savePlayers(players) {
   try { localStorage.setItem('siif_players', JSON.stringify(players)); } catch (e) { alert('Não foi possível salvar (armazenamento do navegador cheio ou indisponível).'); }
 }
+
+/* Mesma salvaguarda do jogo principal: baixa uma cópia .json do ranking (no máximo 1x a
+   cada 5 min) sempre que algo muda por aqui, pra sobreviver a um navegador que trave/corrompa
+   os dados. Usa a mesma chave 'siif_last_autobackup' do app.js, então não duplica downloads
+   se o professor abrir o Admin logo depois de uma partida. */
+function autoBackupIfNeeded() {
+  try {
+    var players = getPlayers();
+    if (Object.keys(players).length === 0) return;
+    var last = parseInt(localStorage.getItem('siif_last_autobackup') || '0', 10);
+    var now = Date.now();
+    var INTERVALO_MIN = 5 * 60 * 1000;
+    if (now - last < INTERVALO_MIN) { atualizarStatusBackup(last); return; }
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+    var d = new Date();
+    var fname = 'siif_ranking_auto_' + d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+      '_' + pad(d.getHours()) + 'h' + pad(d.getMinutes()) + '.json';
+    var blob = new Blob([JSON.stringify(players, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    localStorage.setItem('siif_last_autobackup', String(now));
+    atualizarStatusBackup(now);
+  } catch (e) {}
+}
+function atualizarStatusBackup(ts) {
+  var el = document.getElementById('backupStatus');
+  if (!el) return;
+  if (!ts) { el.textContent = 'Nenhum backup automático ainda nesta sessão.'; return; }
+  var d = new Date(parseInt(ts, 10));
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  el.textContent = 'Último backup automático: ' + pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + ' às ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
 }
 
 function render() {
+  atualizarStatusBackup(localStorage.getItem('siif_last_autobackup'));
   var players = getPlayers();
   var names = Object.keys(players).sort(function (a, b) { return (players[b].points || 0) - (players[a].points || 0); });
   var tbody = document.getElementById('tbody');
@@ -212,6 +250,7 @@ function deletePlayer(name) {
   delete players[name];
   savePlayers(players);
   render();
+  autoBackupIfNeeded();
 }
 
 function openEdit(name) {
@@ -255,6 +294,7 @@ function saveEdit() {
   savePlayers(players);
   closeEdit();
   render();
+  autoBackupIfNeeded();
 }
 
 function exportBackup() {

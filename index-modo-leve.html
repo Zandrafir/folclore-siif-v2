@@ -1341,6 +1341,36 @@ var App = {
   savePlayers: function (players) {
     try { localStorage.setItem('siif_players', JSON.stringify(players)); } catch (e) {}
   },
+  /* ---------- Backup automático do ranking ----------
+     O ranking mora só no localStorage do navegador, e navegador pode travar, ser fechado
+     à força ou ter os dados corrompidos (já aconteceu duas vezes). Como salvaguarda, a cada
+     novo resultado salvo (no máximo 1x a cada 5 min, pra não spammar a pasta de Downloads)
+     baixamos um arquivo .json com o ranking completo — esse arquivo pode ser reaberto depois
+     em "Importar Backup" no painel Admin caso o navegador perca os dados de novo. */
+  autoBackupIfNeeded: function () {
+    try {
+      var players = App.getPlayers();
+      if (Object.keys(players).length === 0) return;
+      var last = parseInt(localStorage.getItem('siif_last_autobackup') || '0', 10);
+      var now = Date.now();
+      var INTERVALO_MIN = 5 * 60 * 1000;
+      if (now - last < INTERVALO_MIN) return;
+      var pad = function (n) { return String(n).padStart(2, '0'); };
+      var d = new Date();
+      var fname = 'siif_ranking_auto_' + d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+        '_' + pad(d.getHours()) + 'h' + pad(d.getMinutes()) + '.json';
+      var blob = new Blob([JSON.stringify(players, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      localStorage.setItem('siif_last_autobackup', String(now));
+    } catch (e) {}
+  },
   loadPlayerName: function () {
     try { state.playerName = localStorage.getItem('siif_current_player') || ''; } catch (e) { state.playerName = ''; }
   },
@@ -1374,6 +1404,7 @@ var App = {
     p.games[key] = { done: true, percent: state.lastGamePercent };
     p.points = App.computeTotalPoints(p);
     App.savePlayers(players);
+    App.autoBackupIfNeeded();
   },
   /* ---------- Acesso de administrador (protege ações sensíveis num totem compartilhado) ---------- */
   checkAdminSenha: function (motivo) {
