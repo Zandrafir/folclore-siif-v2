@@ -237,12 +237,26 @@ function render() {
       '<td class="pts">' + (p.points || 0) + '</td>' +
       '<td>' + gamesHtml + '</td>' +
       '<td><div class="row-actions">' +
-        '<button class="btn btn-secondary btn-small" onclick="openEdit(' + JSON.stringify(name) + ')">✎ Editar</button>' +
-        '<button class="btn btn-danger btn-small" onclick="deletePlayer(' + JSON.stringify(name) + ')">🗑 Excluir</button>' +
+        '<button class="btn btn-secondary btn-small" data-action="edit" data-name="' + esc(name) + '">✎ Editar</button>' +
+        '<button class="btn btn-danger btn-small" data-action="delete" data-name="' + esc(name) + '">🗑 Excluir</button>' +
       '</div></td>' +
     '</tr>';
   }).join('');
 }
+/* Delegação de clique nos botões da tabela: antes o onclick era montado com
+   JSON.stringify(name) dentro de um atributo já delimitado por aspas duplas — quando o
+   nome (ou o próprio JSON.stringify) usava aspas duplas, o HTML do atributo quebrava e o
+   botão simplesmente não fazia nada ao clicar. Usar data-name + um único listener delegado
+   evita esse problema (e sobrevive a nomes com aspas, apóstrofo etc.), pois o nome é lido
+   via getAttribute, não reinterpretado como código. */
+document.getElementById('tbody').addEventListener('click', function (e) {
+  var btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  var name = btn.getAttribute('data-name');
+  var action = btn.getAttribute('data-action');
+  if (action === 'edit') openEdit(name);
+  else if (action === 'delete') deletePlayer(name);
+});
 
 function deletePlayer(name) {
   if (!confirm('Excluir "' + name + '" do ranking? Essa ação não pode ser desfeita.')) return;
